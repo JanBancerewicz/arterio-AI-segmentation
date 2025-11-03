@@ -1,0 +1,18 @@
+The ARCADE dataset (Automatic Region-based Coronary Artery Disease Diagnostics using X-ray Angiography) provides a large-scale, expert-annotated resource for developing and benchmarking AI models in coronary artery disease (CAD) diagnostics. It includes:
+
+3,000 anonymized X-ray coronary angiography (XCA) frames
+Two tasks:
+
+Vessel segmentation and classification (1,500 images) using the SYNTAX score methodology
+
+Stenosis detection (1,500 images) with annotated atherosclerotic plaques
+
+Annotations created and cross-validated by experienced cardiologists using the CVAT tool
+
+Images sourced from real-world patients (age 19–90) at the Research Institute of Cardiology and Internal Diseases (Almaty, Kazakhstan)
+
+Images obtained using Philips Azurion 3 and Siemens Artis Zee angiographs
+
+Frame resolution: 512 × 512 pixels
+
+This dataset supports research in medical image analysis, deep learning, quantitative coronary analysis, and automated diagnostics. It was first introduced as part of the ARCADE Challenge at MICCAI 2023.
