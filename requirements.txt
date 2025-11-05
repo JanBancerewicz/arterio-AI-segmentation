@@ -1,0 +1,21 @@
+# --- najpierw tą komende zrobić ---
+# pip install torch==2.9.0 torchvision==0.24.0 torchaudio==2.9.0 --index-url https://download.pytorch.org/whl/cu128
+
+# --- Podstawowe biblioteki naukowe ---
+numpy>=1.26.0
+pandas>=2.2.0
+
+# --- Wizualizacja i Przetwarzanie Obrazów ---
+matplotlib>=3.8.0
+Pillow>=10.3.0
+
+# --- Ekosystem Hugging Face (VLM/LLM) ---
+# Te pakiety będą kompatybilne z PyTorch 2.9.0
+transformers>=4.42.0  # Zaktualizowana wersja dla nowszego PyTorcha
+datasets>=2.18.0
+accelerate>=0.29.0
+peft>=0.11.0          # Zaktualizowana wersja
+bitsandbytes>=0.43.0
+
+# --- Narzędzia ---
+tqdm>=4.66.0
