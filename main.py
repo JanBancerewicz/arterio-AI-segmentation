@@ -13,7 +13,6 @@ model = Qwen3VLForConditionalGeneration.from_pretrained(
     "Qwen/Qwen3-VL-8B-Instruct", dtype="auto", device_map="auto"
 )
 processor = AutoProcessor.from_pretrained("Qwen/Qwen3-VL-8B-Instruct")
-tokenizer = processor.tokenizer 
+tokenizer = processor.tokenizer
 max_seq_length = 2048
-
 
