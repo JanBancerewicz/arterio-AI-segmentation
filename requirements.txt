@@ -1,23 +1,32 @@
-scikit-image
-opencv-python
-# --- najpierw tą komende zrobić ---
+# ==========================================
+# INSTRUKCJA INSTALACJI:
+# Najpierw wykonaj ręcznie poniższą komendę w terminalu, 
+# aby zainstalować PyTorch z obsługą CUDA:
 # pip install torch==2.9.0 torchvision==0.24.0 torchaudio==2.9.0 --index-url https://download.pytorch.org/whl/cu128
+# ==========================================
 
 # --- Podstawowe biblioteki naukowe ---
 numpy>=1.26.0
 pandas>=2.2.0
+scipy                   # Wymagane często przez algorytmy przetwarzania obrazu
 
 # --- Wizualizacja i Przetwarzanie Obrazów ---
 matplotlib>=3.8.0
 Pillow>=10.3.0
+scikit-image            # Do zaawansowanych operacji na obrazach
+opencv-python           # Do wczytywania i prostych operacji (cv2)
 
 # --- Ekosystem Hugging Face (VLM/LLM) ---
-# Te pakiety będą kompatybilne z PyTorch 2.9.0
-transformers>=4.42.0  # Zaktualizowana wersja dla nowszego PyTorcha
-datasets>=2.18.0
-accelerate>=0.29.0
-peft>=0.11.0          # Zaktualizowana wersja
-bitsandbytes>=0.43.0
+transformers>=4.42.0    # Framework do obsługi modelu Qwen
+datasets>=2.18.0        # Zarządzanie danymi (opcjonalne, ale warto mieć)
+accelerate>=0.29.0      # Optymalizacja treningu na GPU
+peft>=0.11.0            # Obsługa LoRA (adapterów)
+bitsandbytes>=0.43.0    # Kwantyzacja 4-bitowa (oszczędność VRAM)
+huggingface_hub         # Do pobierania modeli/zapisywania
 
-# --- Narzędzia ---
-tqdm>=4.66.0
+# --- Specyficzne dla Qwen2-VL ---
+qwen-vl-utils           # NIEZBĘDNE: Narzędzia do preprocessingu wizualnego Qwen
+
+# --- Narzędzia i Logowanie ---
+tqdm>=4.66.0            # Paski postępu
+tensorboard             # Do śledzenia wykresów straty (Loss) w trakcie treningu
