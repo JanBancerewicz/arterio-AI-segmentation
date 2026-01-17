@@ -135,4 +135,4 @@ if __name__ == "__main__":
     path_to_images = 'data/syntax/train/images'
 
     # 3. Uruchomienie (limit=10 wygeneruje 10 pierwszych zdjęć)
-    visualize_qwen_jsonl(path_to_jsonl, path_to_images, limit=10)
+    visualize_qwen_jsonl(path_to_jsonl, path_to_images, limit=1)

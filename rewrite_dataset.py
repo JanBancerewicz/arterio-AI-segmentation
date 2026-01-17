@@ -2,22 +2,29 @@ import json
 import numpy as np
 import cv2
 
-def normalize_bbox(x, y, w, h, img_w, img_h, max_val=1000):
+def normalize_bbox(bbox, width, height):
     """
-    Zamienia bbox xywh (piksele) na format x1,y1,x2,y2 (znormalizowany 0-1000).
+    Przyjmuje bbox w formacie [x1, y1, x2, y2] (piksele).
+    Zwraca string sformatowany dla Qwen2-VL: "(ymin,xmin),(ymax,xmax)"
     """
-    x1 = int((x / img_w) * max_val)
-    y1 = int((y / img_h) * max_val)
-    x2 = int(((x + w) / img_w) * max_val)
-    y2 = int(((y + h) / img_h) * max_val)
+    # Rozpakowanie współrzędnych
+    x1, y1, x2, y2 = bbox
 
-    # Clamp (zabezpieczenie, żeby nie wyjść poza 0-1000)
-    x1 = max(0, min(max_val, x1))
-    y1 = max(0, min(max_val, y1))
-    x2 = max(0, min(max_val, x2))
-    y2 = max(0, min(max_val, y2))
+    # Zabezpieczenie (Clamping) - żeby nie wyjść poza wymiary obrazka
+    x1 = max(0, min(x1, width))
+    y1 = max(0, min(y1, height))
+    x2 = max(0, min(x2, width))
+    y2 = max(0, min(y2, height))
 
-    return x1, y1, x2, y2
+    # Normalizacja do 0-1000
+    # UWAGA: Qwen wymaga kolejności (Y, X) !!!
+    x1_norm = int((x1 / width) * 1000)
+    y1_norm = int((y1 / height) * 1000)
+    x2_norm = int((x2 / width) * 1000)
+    y2_norm = int((y2 / height) * 1000)
+
+    # Zwracamy gotowy fragment tekstu
+    return f"({y1_norm},{x1_norm}),({y2_norm},{x2_norm})"
 
 def prepare_dataset_multi_bbox(json_path, output_jsonl):
     print(f"Przetwarzanie (tryb Multi-BBox): {json_path}...")
@@ -61,25 +68,29 @@ def prepare_dataset_multi_bbox(json_path, output_jsonl):
                     # 1. Tworzymy małą maskę/kontur tylko dla tego jednego segmentu
                     poly = np.array(seg).reshape(-1, 2).astype(np.int32)
 
-                    # 2. Wyliczamy ciasny BBox dla tego kawałka
+                    # 2. Wyliczamy BBox (x, y, width, height)
                     bx, by, bw, bh = cv2.boundingRect(poly)
 
-                    # Ignoruj bardzo małe skrawki (np. mniejsze niż 5x5 pikseli), żeby nie spamować modelu szumem
+                    # Ignoruj bardzo małe skrawki
                     if bw < 5 or bh < 5:
                         continue
 
-                    # 3. Normalizacja
-                    nx1, ny1, nx2, ny2 = normalize_bbox(bx, by, bw, bh, w, h)
+                    # 3. Konwersja z XYWH na XYXY (x2 = x1 + w)
+                    x2 = bx + bw
+                    y2 = by + bh
+
+                    # 4. Normalizacja i formatowanie (funkcja zwraca string)
+                    # Przekazujemy listę [x1, y1, x2, y2] oraz wymiary obrazu
+                    bbox_string = normalize_bbox([bx, by, x2, y2], w, h)
 
                     # Dodaj do ciągu wynikowego
-                    boxes_list_str += f"<box>({nx1},{ny1}),({nx2},{ny2})</box>"
+                    boxes_list_str += f"<box>{bbox_string}</box>"
                     valid_boxes_count += 1
 
         if valid_boxes_count == 0:
             continue
 
-        # 4. Konstrukcja wpisu JSONL
-        # Output wygląda np. tak: <ref>Arteries</ref><box>...</box><box>...</box>
+        # 5. Konstrukcja wpisu JSONL
         entry = {
             "id": f"identity_{img_id}",
             "image": img_info['file_name'],
@@ -101,7 +112,7 @@ def prepare_dataset_multi_bbox(json_path, output_jsonl):
             json.dump(entry, out, ensure_ascii=False)
             out.write('\n')
 
-    print(f"Gotowe! Zapisano {len(qwen_data)} przykładów. Średnio ramek na obraz: {valid_boxes_count}")
+    print(f"Gotowe! Zapisano {len(qwen_data)} przykładów.")
 
 if __name__ == "__main__":
     prepare_dataset_multi_bbox(
