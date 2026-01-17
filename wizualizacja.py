@@ -94,5 +94,6 @@ def visualize_coco_annotations_with_bbox_and_labels(json_path, image_id, output_
 
 # ==============================================================================
 # PRZYKŁAD UŻYCIA ULEPSZONEJ FUNKCJI DLA OBRAZU 922:
-output_file = visualize_coco_annotations_with_bbox_and_labels('data/syntax/train/annotations/train.json', image_id=5)
+# output_file = visualize_coco_annotations_with_bbox_and_labels('data/syntax/train/annotations/train.json', image_id=5)
+output_file = visualize_coco_annotations_with_bbox_and_labels('data/syntax/test/annotations/test.json', image_id=1)
 print(f"Plik wyjściowy z segmentami, bbox i etykietami: {output_file}")
