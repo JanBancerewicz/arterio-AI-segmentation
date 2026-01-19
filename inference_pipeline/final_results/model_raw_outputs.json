@@ -1,0 +1,26 @@
+[
+  {
+    "filename": "1.png",
+    "raw_output": " the coronary arteries. Return bounding boxes.(139,101),(869,827)",
+    "parsed_boxes": [
+      [
+        101,
+        139,
+        827,
+        869
+      ]
+    ]
+  },
+  {
+    "filename": "2.png",
+    "raw_output": " the coronary arteries. Return bounding boxes.(10,10),(987,987)",
+    "parsed_boxes": [
+      [
+        10,
+        10,
+        987,
+        987
+      ]
+    ]
+  }
+]
