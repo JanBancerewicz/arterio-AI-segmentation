@@ -1,0 +1,21 @@
+{
+  "summary": {
+    "precision": 0,
+    "recall": 0.0,
+    "f1": 0
+  },
+  "details": [
+    {
+      "filename": "1.png",
+      "tp": 0,
+      "fp": 0,
+      "fn": 6
+    },
+    {
+      "filename": "2.png",
+      "tp": 0,
+      "fp": 0,
+      "fn": 6
+    }
+  ]
+}

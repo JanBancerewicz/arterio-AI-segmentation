@@ -1,0 +1,2602 @@
+[
+  {
+    "image": "660.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(561,597),(695,696)</box><ref>coronary vessel</ref><box>(456,259),(549,417)</box><ref>coronary vessel</ref><box>(547,617),(642,898)</box><ref>coronary vessel</ref><box>(364,215),(469,269)</box><ref>coronary vessel</ref><box>(533,416),(570,618)</box><ref>coronary vessel</ref><box>(542,372),(618,404)</box><ref>coronary vessel</ref><box>(563,453),(653,559)</box>"
+      }
+    ]
+  },
+  {
+    "image": "55.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(169,546),(368,683)</box><ref>coronary vessel</ref><box>(98,364),(186,563)</box><ref>coronary vessel</ref><box>(365,556),(610,665)</box><ref>coronary vessel</ref><box>(115,274),(295,372)</box><ref>coronary vessel</ref><box>(359,670),(674,814)</box>"
+      }
+    ]
+  },
+  {
+    "image": "375.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(459,144),(774,311)</box><ref>coronary vessel</ref><box>(97,142),(224,218)</box><ref>coronary vessel</ref><box>(556,218),(911,529)</box><ref>coronary vessel</ref><box>(501,186),(721,546)</box><ref>coronary vessel</ref><box>(711,528),(823,942)</box><ref>coronary vessel</ref><box>(205,142),(501,214)</box>"
+      }
+    ]
+  },
+  {
+    "image": "346.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(183,554),(295,737)</box><ref>coronary vessel</ref><box>(0,707),(187,765)</box><ref>coronary vessel</ref><box>(221,282),(730,713)</box><ref>coronary vessel</ref><box>(133,278),(227,323)</box><ref>coronary vessel</ref><box>(211,208),(450,297)</box><ref>coronary vessel</ref><box>(271,545),(640,849)</box><ref>coronary vessel</ref><box>(200,314),(326,564)</box>"
+      }
+    ]
+  },
+  {
+    "image": "157.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(341,191),(586,244)</box><ref>coronary vessel</ref><box>(259,176),(341,277)</box><ref>coronary vessel</ref><box>(318,69),(501,187)</box><ref>coronary vessel</ref><box>(581,190),(892,470)</box>"
+      }
+    ]
+  },
+  {
+    "image": "37.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(369,171),(467,358)</box><ref>coronary vessel</ref><box>(460,251),(828,920)</box><ref>coronary vessel</ref><box>(223,148),(369,224)</box><ref>coronary vessel</ref><box>(432,349),(526,655)</box>"
+      }
+    ]
+  },
+  {
+    "image": "607.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(265,330),(409,513)</box><ref>coronary vessel</ref><box>(389,506),(474,739)</box><ref>coronary vessel</ref><box>(461,733),(715,791)</box><ref>coronary vessel</ref><box>(278,227),(451,328)</box><ref>coronary vessel</ref><box>(173,296),(290,357)</box>"
+      }
+    ]
+  },
+  {
+    "image": "523.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(450,336),(562,493)</box><ref>coronary vessel</ref><box>(333,486),(463,631)</box><ref>coronary vessel</ref><box>(321,398),(369,630)</box><ref>coronary vessel</ref><box>(328,235),(446,402)</box><ref>coronary vessel</ref><box>(448,452),(964,625)</box><ref>coronary vessel</ref><box>(553,329),(794,422)</box>"
+      }
+    ]
+  },
+  {
+    "image": "270.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(157,148),(313,192)</box><ref>coronary vessel</ref><box>(520,349),(843,767)</box><ref>coronary vessel</ref><box>(467,240),(977,441)</box><ref>coronary vessel</ref><box>(308,167),(538,359)</box><ref>coronary vessel</ref><box>(32,115),(176,209)</box>"
+      }
+    ]
+  },
+  {
+    "image": "70.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(258,176),(483,320)</box><ref>coronary vessel</ref><box>(490,663),(912,781)</box><ref>coronary vessel</ref><box>(160,308),(284,612)</box><ref>coronary vessel</ref><box>(188,593),(501,683)</box>"
+      }
+    ]
+  },
+  {
+    "image": "518.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(75,597),(675,783)</box><ref>coronary vessel</ref><box>(88,812),(688,921)</box><ref>coronary vessel</ref><box>(100,147),(295,253)</box><ref>coronary vessel</ref><box>(31,226),(108,285)</box><ref>coronary vessel</ref><box>(40,453),(98,825)</box><ref>coronary vessel</ref><box>(57,254),(127,460)</box>"
+      }
+    ]
+  },
+  {
+    "image": "899.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(148,363),(328,616)</box><ref>coronary vessel</ref><box>(221,98),(351,150)</box><ref>coronary vessel</ref><box>(348,89),(584,142)</box><ref>coronary vessel</ref><box>(315,390),(756,718)</box><ref>coronary vessel</ref><box>(289,140),(354,364)</box>"
+      }
+    ]
+  },
+  {
+    "image": "336.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(230,97),(330,221)</box><ref>coronary vessel</ref><box>(323,192),(516,320)</box><ref>coronary vessel</ref><box>(502,593),(749,672)</box><ref>coronary vessel</ref><box>(154,74),(229,138)</box><ref>coronary vessel</ref><box>(324,209),(506,600)</box><ref>coronary vessel</ref><box>(497,546),(960,615)</box><ref>coronary vessel</ref><box>(306,139),(676,266)</box><ref>coronary vessel</ref><box>(221,39),(363,91)</box>"
+      }
+    ]
+  },
+  {
+    "image": "28.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(255,203),(399,328)</box><ref>coronary vessel</ref><box>(196,554),(533,598)</box><ref>coronary vessel</ref><box>(531,447),(780,569)</box><ref>coronary vessel</ref><box>(172,319),(280,582)</box>"
+      }
+    ]
+  },
+  {
+    "image": "180.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(400,180),(670,339)</box><ref>coronary vessel</ref><box>(100,177),(401,220)</box><ref>coronary vessel</ref><box>(660,328),(814,868)</box><ref>coronary vessel</ref><box>(212,69),(749,360)</box>"
+      }
+    ]
+  },
+  {
+    "image": "105.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(354,559),(501,899)</box><ref>coronary vessel</ref><box>(354,255),(422,562)</box><ref>coronary vessel</ref><box>(247,84),(371,169)</box><ref>coronary vessel</ref><box>(364,86),(442,258)</box><ref>coronary vessel</ref><box>(430,121),(665,541)</box>"
+      }
+    ]
+  },
+  {
+    "image": "739.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(281,94),(487,177)</box><ref>coronary vessel</ref><box>(215,108),(284,168)</box><ref>coronary vessel</ref><box>(564,216),(919,603)</box><ref>coronary vessel</ref><box>(473,158),(638,515)</box><ref>coronary vessel</ref><box>(585,512),(813,839)</box>"
+      }
+    ]
+  },
+  {
+    "image": "893.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(508,690),(554,956)</box><ref>coronary vessel</ref><box>(486,219),(558,696)</box><ref>coronary vessel</ref><box>(181,112),(262,205)</box><ref>coronary vessel</ref><box>(470,181),(816,600)</box><ref>coronary vessel</ref><box>(254,75),(500,237)</box>"
+      }
+    ]
+  },
+  {
+    "image": "405.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(317,701),(708,766)</box><ref>coronary vessel</ref><box>(244,222),(385,316)</box><ref>coronary vessel</ref><box>(320,767),(668,833)</box><ref>coronary vessel</ref><box>(129,309),(273,591)</box><ref>coronary vessel</ref><box>(128,592),(326,780)</box>"
+      }
+    ]
+  },
+  {
+    "image": "907.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(418,478),(627,594)</box><ref>coronary vessel</ref><box>(369,440),(421,533)</box><ref>coronary vessel</ref><box>(379,532),(804,708)</box><ref>coronary vessel</ref><box>(183,298),(338,442)</box><ref>coronary vessel</ref><box>(131,429),(204,652)</box><ref>coronary vessel</ref><box>(169,522),(382,657)</box>"
+      }
+    ]
+  },
+  {
+    "image": "733.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(238,419),(475,517)</box><ref>coronary vessel</ref><box>(188,477),(268,724)</box><ref>coronary vessel</ref><box>(247,711),(540,818)</box><ref>coronary vessel</ref><box>(521,790),(891,867)</box><ref>coronary vessel</ref><box>(532,749),(798,821)</box>"
+      }
+    ]
+  },
+  {
+    "image": "709.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(407,364),(919,497)</box><ref>coronary vessel</ref><box>(292,96),(382,294)</box><ref>coronary vessel</ref><box>(241,394),(406,564)</box><ref>coronary vessel</ref><box>(218,294),(327,543)</box><ref>coronary vessel</ref><box>(384,190),(531,394)</box>"
+      }
+    ]
+  },
+  {
+    "image": "331.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(80,216),(360,331)</box><ref>coronary vessel</ref><box>(203,433),(497,545)</box><ref>coronary vessel</ref><box>(483,458),(752,690)</box><ref>coronary vessel</ref><box>(94,318),(204,538)</box><ref>coronary vessel</ref><box>(486,255),(597,458)</box>"
+      }
+    ]
+  },
+  {
+    "image": "433.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(136,108),(239,171)</box><ref>coronary vessel</ref><box>(203,597),(560,760)</box><ref>coronary vessel</ref><box>(148,405),(289,697)</box><ref>coronary vessel</ref><box>(239,100),(410,165)</box><ref>coronary vessel</ref><box>(288,357),(836,694)</box><ref>coronary vessel</ref><box>(167,687),(672,811)</box><ref>coronary vessel</ref><box>(214,138),(292,404)</box>"
+      }
+    ]
+  },
+  {
+    "image": "625.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(358,218),(406,400)</box><ref>coronary vessel</ref><box>(195,525),(257,753)</box><ref>coronary vessel</ref><box>(380,207),(588,305)</box><ref>coronary vessel</ref><box>(237,145),(382,219)</box><ref>coronary vessel</ref><box>(388,387),(709,794)</box><ref>coronary vessel</ref><box>(251,387),(366,529)</box>"
+      }
+    ]
+  },
+  {
+    "image": "803.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(511,420),(794,924)</box><ref>coronary vessel</ref><box>(364,161),(543,426)</box><ref>coronary vessel</ref><box>(147,73),(379,174)</box><ref>coronary vessel</ref><box>(65,69),(155,158)</box><ref>coronary vessel</ref><box>(359,119),(916,581)</box>"
+      }
+    ]
+  },
+  {
+    "image": "971.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(199,240),(328,477)</box><ref>coronary vessel</ref><box>(140,461),(229,759)</box><ref>coronary vessel</ref><box>(200,474),(328,759)</box><ref>coronary vessel</ref><box>(328,472),(815,645)</box>"
+      }
+    ]
+  },
+  {
+    "image": "502.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(389,158),(740,295)</box><ref>coronary vessel</ref><box>(467,33),(931,363)</box><ref>coronary vessel</ref><box>(540,134),(871,249)</box><ref>coronary vessel</ref><box>(639,735),(930,879)</box><ref>coronary vessel</ref><box>(675,261),(813,786)</box><ref>coronary vessel</ref><box>(728,235),(865,298)</box>"
+      }
+    ]
+  },
+  {
+    "image": "246.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(303,46),(407,92)</box><ref>coronary vessel</ref><box>(515,196),(762,577)</box><ref>coronary vessel</ref><box>(381,68),(516,350)</box><ref>coronary vessel</ref><box>(422,660),(518,1000)</box><ref>coronary vessel</ref><box>(399,344),(474,668)</box>"
+      }
+    ]
+  },
+  {
+    "image": "737.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(542,449),(668,729)</box><ref>coronary vessel</ref><box>(339,259),(418,329)</box><ref>coronary vessel</ref><box>(390,192),(499,276)</box><ref>coronary vessel</ref><box>(401,276),(647,461)</box><ref>coronary vessel</ref><box>(431,250),(797,597)</box><ref>coronary vessel</ref><box>(289,721),(557,856)</box>"
+      }
+    ]
+  },
+  {
+    "image": "986.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(182,126),(470,201)</box><ref>coronary vessel</ref><box>(81,131),(184,212)</box><ref>coronary vessel</ref><box>(456,182),(691,523)</box>"
+      }
+    ]
+  },
+  {
+    "image": "459.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(303,593),(919,783)</box><ref>coronary vessel</ref><box>(110,273),(303,542)</box><ref>coronary vessel</ref><box>(24,251),(129,330)</box><ref>coronary vessel</ref><box>(97,190),(355,265)</box><ref>coronary vessel</ref><box>(259,539),(306,840)</box>"
+      }
+    ]
+  },
+  {
+    "image": "431.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(84,201),(228,288)</box><ref>coronary vessel</ref><box>(667,466),(834,711)</box><ref>coronary vessel</ref><box>(404,179),(791,435)</box><ref>coronary vessel</ref><box>(428,224),(688,467)</box><ref>coronary vessel</ref><box>(226,200),(438,255)</box>"
+      }
+    ]
+  },
+  {
+    "image": "498.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(614,332),(845,417)</box><ref>coronary vessel</ref><box>(419,213),(612,414)</box><ref>coronary vessel</ref><box>(246,108),(325,225)</box><ref>coronary vessel</ref><box>(569,405),(834,657)</box><ref>coronary vessel</ref><box>(323,110),(440,223)</box>"
+      }
+    ]
+  },
+  {
+    "image": "62.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(733,421),(932,910)</box><ref>coronary vessel</ref><box>(503,142),(746,431)</box><ref>coronary vessel</ref><box>(176,111),(513,181)</box>"
+      }
+    ]
+  },
+  {
+    "image": "456.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(204,567),(345,750)</box><ref>coronary vessel</ref><box>(603,729),(775,781)</box><ref>coronary vessel</ref><box>(195,408),(426,577)</box><ref>coronary vessel</ref><box>(334,726),(612,765)</box><ref>coronary vessel</ref><box>(600,604),(763,729)</box>"
+      }
+    ]
+  },
+  {
+    "image": "699.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(666,646),(929,736)</box><ref>coronary vessel</ref><box>(563,688),(677,764)</box><ref>coronary vessel</ref><box>(233,601),(526,702)</box><ref>coronary vessel</ref><box>(265,261),(374,371)</box><ref>coronary vessel</ref><box>(529,619),(666,700)</box><ref>coronary vessel</ref><box>(655,657),(730,760)</box><ref>coronary vessel</ref><box>(192,360),(276,613)</box><ref>coronary vessel</ref><box>(522,701),(707,790)</box>"
+      }
+    ]
+  },
+  {
+    "image": "260.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(643,394),(924,922)</box><ref>coronary vessel</ref><box>(648,638),(721,997)</box><ref>coronary vessel</ref><box>(583,327),(701,639)</box><ref>coronary vessel</ref><box>(424,220),(595,347)</box><ref>coronary vessel</ref><box>(252,189),(429,266)</box>"
+      }
+    ]
+  },
+  {
+    "image": "786.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(254,188),(398,285)</box><ref>coronary vessel</ref><box>(110,178),(259,234)</box><ref>coronary vessel</ref><box>(396,263),(527,429)</box>"
+      }
+    ]
+  },
+  {
+    "image": "513.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(584,676),(682,996)</box><ref>coronary vessel</ref><box>(172,138),(311,217)</box><ref>coronary vessel</ref><box>(453,272),(656,678)</box><ref>coronary vessel</ref><box>(308,139),(479,294)</box>"
+      }
+    ]
+  },
+  {
+    "image": "86.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(83,655),(144,884)</box><ref>coronary vessel</ref><box>(85,360),(227,654)</box><ref>coronary vessel</ref><box>(218,329),(369,374)</box>"
+      }
+    ]
+  },
+  {
+    "image": "874.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(164,151),(292,210)</box><ref>coronary vessel</ref><box>(410,184),(879,532)</box><ref>coronary vessel</ref><box>(648,392),(757,846)</box><ref>coronary vessel</ref><box>(315,161),(426,240)</box><ref>coronary vessel</ref><box>(416,223),(661,398)</box>"
+      }
+    ]
+  },
+  {
+    "image": "603.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(234,293),(358,447)</box><ref>coronary vessel</ref><box>(350,314),(571,424)</box><ref>coronary vessel</ref><box>(362,155),(959,424)</box><ref>coronary vessel</ref><box>(567,348),(957,645)</box>"
+      }
+    ]
+  },
+  {
+    "image": "741.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(201,68),(506,176)</box><ref>coronary vessel</ref><box>(386,42),(908,368)</box><ref>coronary vessel</ref><box>(103,51),(209,159)</box><ref>coronary vessel</ref><box>(495,158),(640,500)</box><ref>coronary vessel</ref><box>(613,493),(776,918)</box>"
+      }
+    ]
+  },
+  {
+    "image": "939.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(18,121),(573,447)</box><ref>coronary vessel</ref><box>(164,23),(429,98)</box><ref>coronary vessel</ref><box>(423,68),(683,480)</box><ref>coronary vessel</ref><box>(674,465),(795,820)</box>"
+      }
+    ]
+  },
+  {
+    "image": "44.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(375,325),(472,431)</box><ref>coronary vessel</ref><box>(272,427),(393,556)</box><ref>coronary vessel</ref><box>(196,200),(429,312)</box><ref>coronary vessel</ref><box>(161,300),(275,560)</box><ref>coronary vessel</ref><box>(382,434),(805,657)</box>"
+      }
+    ]
+  },
+  {
+    "image": "900.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(721,188),(864,543)</box><ref>coronary vessel</ref><box>(168,150),(280,209)</box><ref>coronary vessel</ref><box>(271,293),(349,433)</box><ref>coronary vessel</ref><box>(282,194),(742,755)</box><ref>coronary vessel</ref><box>(287,128),(506,194)</box><ref>coronary vessel</ref><box>(500,114),(739,199)</box><ref>coronary vessel</ref><box>(111,788),(249,890)</box><ref>coronary vessel</ref><box>(238,214),(287,353)</box><ref>coronary vessel</ref><box>(91,354),(262,796)</box>"
+      }
+    ]
+  },
+  {
+    "image": "627.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(400,443),(489,723)</box><ref>coronary vessel</ref><box>(483,428),(812,584)</box><ref>coronary vessel</ref><box>(349,287),(477,452)</box><ref>coronary vessel</ref><box>(486,546),(742,683)</box><ref>coronary vessel</ref><box>(253,263),(372,326)</box>"
+      }
+    ]
+  },
+  {
+    "image": "223.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(604,513),(671,940)</box><ref>coronary vessel</ref><box>(542,165),(647,513)</box><ref>coronary vessel</ref><box>(398,99),(560,182)</box><ref>coronary vessel</ref><box>(534,139),(785,281)</box><ref>coronary vessel</ref><box>(317,83),(436,130)</box><ref>coronary vessel</ref><box>(635,231),(745,396)</box><ref>coronary vessel</ref><box>(396,38),(559,95)</box><ref>coronary vessel</ref><box>(629,452),(731,579)</box>"
+      }
+    ]
+  },
+  {
+    "image": "316.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(281,536),(427,726)</box><ref>coronary vessel</ref><box>(748,413),(994,529)</box><ref>coronary vessel</ref><box>(764,498),(994,615)</box><ref>coronary vessel</ref><box>(304,365),(454,539)</box><ref>coronary vessel</ref><box>(597,498),(763,682)</box><ref>coronary vessel</ref><box>(427,656),(610,703)</box><ref>coronary vessel</ref><box>(593,632),(917,819)</box>"
+      }
+    ]
+  },
+  {
+    "image": "821.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(325,241),(402,481)</box><ref>coronary vessel</ref><box>(375,476),(411,728)</box><ref>coronary vessel</ref><box>(367,725),(636,911)</box><ref>coronary vessel</ref><box>(152,209),(363,259)</box>"
+      }
+    ]
+  },
+  {
+    "image": "248.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(298,160),(548,216)</box><ref>coronary vessel</ref><box>(406,344),(590,529)</box><ref>coronary vessel</ref><box>(193,211),(282,292)</box><ref>coronary vessel</ref><box>(312,218),(597,379)</box><ref>coronary vessel</ref><box>(283,234),(409,369)</box>"
+      }
+    ]
+  },
+  {
+    "image": "412.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(182,214),(262,273)</box><ref>coronary vessel</ref><box>(428,279),(732,502)</box><ref>coronary vessel</ref><box>(544,484),(898,636)</box><ref>coronary vessel</ref><box>(259,216),(439,323)</box><ref>coronary vessel</ref><box>(425,317),(625,710)</box><ref>coronary vessel</ref><box>(614,709),(779,947)</box>"
+      }
+    ]
+  },
+  {
+    "image": "207.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(453,612),(744,701)</box><ref>coronary vessel</ref><box>(243,312),(391,496)</box><ref>coronary vessel</ref><box>(214,487),(274,659)</box><ref>coronary vessel</ref><box>(271,611),(456,659)</box><ref>coronary vessel</ref><box>(441,475),(591,611)</box>"
+      }
+    ]
+  },
+  {
+    "image": "629.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(336,373),(398,452)</box><ref>coronary vessel</ref><box>(368,237),(775,374)</box><ref>coronary vessel</ref><box>(607,390),(742,671)</box><ref>coronary vessel</ref><box>(340,239),(428,404)</box><ref>coronary vessel</ref><box>(396,379),(611,423)</box><ref>coronary vessel</ref><box>(719,558),(860,731)</box><ref>coronary vessel</ref><box>(714,493),(869,605)</box>"
+      }
+    ]
+  },
+  {
+    "image": "667.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(128,465),(313,786)</box><ref>coronary vessel</ref><box>(178,316),(420,489)</box><ref>coronary vessel</ref><box>(713,808),(979,843)</box><ref>coronary vessel</ref><box>(309,739),(720,830)</box>"
+      }
+    ]
+  },
+  {
+    "image": "300.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(749,495),(885,890)</box><ref>coronary vessel</ref><box>(415,222),(766,503)</box><ref>coronary vessel</ref><box>(326,145),(763,405)</box><ref>coronary vessel</ref><box>(209,190),(415,248)</box>"
+      }
+    ]
+  },
+  {
+    "image": "804.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(545,553),(793,875)</box><ref>coronary vessel</ref><box>(274,159),(735,353)</box><ref>coronary vessel</ref><box>(48,118),(180,171)</box><ref>coronary vessel</ref><box>(339,224),(555,556)</box><ref>coronary vessel</ref><box>(181,121),(346,234)</box>"
+      }
+    ]
+  },
+  {
+    "image": "911.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(571,449),(961,562)</box><ref>coronary vessel</ref><box>(573,401),(845,499)</box><ref>coronary vessel</ref><box>(301,464),(572,555)</box><ref>coronary vessel</ref><box>(170,453),(327,649)</box><ref>coronary vessel</ref><box>(556,353),(669,471)</box><ref>coronary vessel</ref><box>(252,201),(436,459)</box><ref>coronary vessel</ref><box>(641,57),(895,361)</box>"
+      }
+    ]
+  },
+  {
+    "image": "950.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(481,374),(652,780)</box><ref>coronary vessel</ref><box>(487,327),(643,618)</box><ref>coronary vessel</ref><box>(299,190),(502,373)</box><ref>coronary vessel</ref><box>(644,775),(735,1000)</box><ref>coronary vessel</ref><box>(196,186),(298,245)</box>"
+      }
+    ]
+  },
+  {
+    "image": "613.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(273,162),(464,273)</box><ref>coronary vessel</ref><box>(112,151),(274,202)</box><ref>coronary vessel</ref><box>(442,255),(662,652)</box><ref>coronary vessel</ref><box>(640,645),(722,925)</box>"
+      }
+    ]
+  },
+  {
+    "image": "981.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(326,788),(692,896)</box><ref>coronary vessel</ref><box>(370,387),(520,592)</box><ref>coronary vessel</ref><box>(309,584),(398,797)</box>"
+      }
+    ]
+  },
+  {
+    "image": "644.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(296,305),(649,465)</box><ref>coronary vessel</ref><box>(286,236),(350,368)</box><ref>coronary vessel</ref><box>(182,346),(305,449)</box><ref>coronary vessel</ref><box>(499,500),(666,908)</box><ref>coronary vessel</ref><box>(284,393),(509,524)</box>"
+      }
+    ]
+  },
+  {
+    "image": "258.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(368,272),(516,567)</box><ref>coronary vessel</ref><box>(208,172),(395,271)</box><ref>coronary vessel</ref><box>(395,254),(771,412)</box><ref>coronary vessel</ref><box>(510,559),(822,827)</box><ref>coronary vessel</ref><box>(68,146),(206,205)</box>"
+      }
+    ]
+  },
+  {
+    "image": "800.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(476,242),(793,344)</box><ref>coronary vessel</ref><box>(450,151),(563,250)</box><ref>coronary vessel</ref><box>(295,238),(478,312)</box><ref>coronary vessel</ref><box>(677,522),(702,700)</box><ref>coronary vessel</ref><box>(624,351),(702,521)</box><ref>coronary vessel</ref><box>(454,269),(633,366)</box><ref>coronary vessel</ref><box>(550,315),(803,543)</box>"
+      }
+    ]
+  },
+  {
+    "image": "556.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(498,692),(786,912)</box><ref>coronary vessel</ref><box>(297,263),(413,339)</box><ref>coronary vessel</ref><box>(380,292),(577,464)</box><ref>coronary vessel</ref><box>(568,417),(831,692)</box><ref>coronary vessel</ref><box>(407,267),(709,292)</box><ref>coronary vessel</ref><box>(471,460),(588,893)</box>"
+      }
+    ]
+  },
+  {
+    "image": "594.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(297,331),(403,524)</box><ref>coronary vessel</ref><box>(315,151),(455,355)</box><ref>coronary vessel</ref><box>(508,458),(1000,607)</box><ref>coronary vessel</ref><box>(499,172),(999,469)</box><ref>coronary vessel</ref><box>(336,443),(515,542)</box>"
+      }
+    ]
+  },
+  {
+    "image": "469.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(458,591),(765,704)</box><ref>coronary vessel</ref><box>(176,561),(479,608)</box><ref>coronary vessel</ref><box>(176,170),(350,324)</box><ref>coronary vessel</ref><box>(153,326),(205,584)</box><ref>coronary vessel</ref><box>(466,464),(703,585)</box>"
+      }
+    ]
+  },
+  {
+    "image": "894.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(284,259),(387,429)</box><ref>coronary vessel</ref><box>(296,399),(552,504)</box><ref>coronary vessel</ref><box>(306,157),(459,242)</box><ref>coronary vessel</ref><box>(381,268),(474,322)</box><ref>coronary vessel</ref><box>(343,334),(588,398)</box><ref>coronary vessel</ref><box>(328,353),(490,401)</box><ref>coronary vessel</ref><box>(176,388),(299,506)</box><ref>coronary vessel</ref><box>(189,221),(321,400)</box>"
+      }
+    ]
+  },
+  {
+    "image": "698.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(343,163),(806,465)</box><ref>coronary vessel</ref><box>(148,153),(265,230)</box><ref>coronary vessel</ref><box>(257,152),(398,232)</box><ref>coronary vessel</ref><box>(387,218),(600,547)</box><ref>coronary vessel</ref><box>(583,545),(766,939)</box>"
+      }
+    ]
+  },
+  {
+    "image": "988.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(586,597),(978,646)</box><ref>coronary vessel</ref><box>(579,554),(999,615)</box><ref>coronary vessel</ref><box>(160,332),(285,619)</box><ref>coronary vessel</ref><box>(186,102),(460,336)</box><ref>coronary vessel</ref><box>(274,598),(602,646)</box>"
+      }
+    ]
+  },
+  {
+    "image": "392.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(639,631),(839,839)</box><ref>coronary vessel</ref><box>(524,493),(645,876)</box><ref>coronary vessel</ref><box>(380,277),(493,366)</box><ref>coronary vessel</ref><box>(385,371),(595,511)</box><ref>coronary vessel</ref><box>(492,228),(843,476)</box><ref>coronary vessel</ref><box>(227,340),(407,465)</box>"
+      }
+    ]
+  },
+  {
+    "image": "665.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(178,27),(463,120)</box><ref>coronary vessel</ref><box>(440,99),(654,415)</box><ref>coronary vessel</ref><box>(437,74),(858,339)</box><ref>coronary vessel</ref><box>(638,413),(819,873)</box><ref>coronary vessel</ref><box>(69,49),(192,117)</box>"
+      }
+    ]
+  },
+  {
+    "image": "918.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(228,106),(453,215)</box><ref>coronary vessel</ref><box>(104,100),(235,173)</box><ref>coronary vessel</ref><box>(442,194),(663,553)</box><ref>coronary vessel</ref><box>(433,162),(787,391)</box><ref>coronary vessel</ref><box>(632,541),(712,938)</box>"
+      }
+    ]
+  },
+  {
+    "image": "196.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(592,607),(709,816)</box><ref>coronary vessel</ref><box>(596,487),(708,607)</box><ref>coronary vessel</ref><box>(231,357),(318,589)</box><ref>coronary vessel</ref><box>(305,574),(604,621)</box><ref>coronary vessel</ref><box>(261,176),(524,364)</box><ref>coronary vessel</ref><box>(708,486),(961,734)</box>"
+      }
+    ]
+  },
+  {
+    "image": "16.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(189,294),(416,364)</box><ref>coronary vessel</ref><box>(168,350),(275,614)</box><ref>coronary vessel</ref><box>(571,614),(773,718)</box><ref>coronary vessel</ref><box>(262,602),(573,640)</box>"
+      }
+    ]
+  },
+  {
+    "image": "656.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(105,560),(159,758)</box><ref>coronary vessel</ref><box>(117,752),(407,800)</box><ref>coronary vessel</ref><box>(402,756),(769,950)</box><ref>coronary vessel</ref><box>(137,394),(296,562)</box>"
+      }
+    ]
+  },
+  {
+    "image": "623.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(119,201),(206,431)</box><ref>coronary vessel</ref><box>(13,423),(138,772)</box><ref>coronary vessel</ref><box>(139,414),(678,824)</box><ref>coronary vessel</ref><box>(76,543),(549,904)</box>"
+      }
+    ]
+  },
+  {
+    "image": "935.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(736,521),(929,956)</box><ref>coronary vessel</ref><box>(385,111),(758,521)</box><ref>coronary vessel</ref><box>(135,107),(384,159)</box><ref>coronary vessel</ref><box>(340,80),(941,370)</box>"
+      }
+    ]
+  },
+  {
+    "image": "920.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(502,615),(908,683)</box><ref>coronary vessel</ref><box>(440,655),(995,769)</box><ref>coronary vessel</ref><box>(84,568),(318,728)</box><ref>coronary vessel</ref><box>(301,705),(703,838)</box><ref>coronary vessel</ref><box>(80,360),(141,580)</box><ref>coronary vessel</ref><box>(315,551),(589,706)</box><ref>coronary vessel</ref><box>(124,302),(271,374)</box>"
+      }
+    ]
+  },
+  {
+    "image": "276.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(261,348),(428,525)</box><ref>coronary vessel</ref><box>(159,512),(276,797)</box><ref>coronary vessel</ref><box>(565,839),(656,919)</box><ref>coronary vessel</ref><box>(574,729),(812,836)</box><ref>coronary vessel</ref><box>(240,784),(577,842)</box>"
+      }
+    ]
+  },
+  {
+    "image": "111.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(285,562),(688,801)</box><ref>coronary vessel</ref><box>(198,324),(328,499)</box><ref>coronary vessel</ref><box>(143,771),(714,935)</box><ref>coronary vessel</ref><box>(140,495),(329,771)</box><ref>coronary vessel</ref><box>(214,292),(475,340)</box>"
+      }
+    ]
+  },
+  {
+    "image": "220.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(234,600),(514,705)</box><ref>coronary vessel</ref><box>(501,597),(837,758)</box><ref>coronary vessel</ref><box>(202,431),(313,692)</box><ref>coronary vessel</ref><box>(290,170),(395,441)</box>"
+      }
+    ]
+  },
+  {
+    "image": "115.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(394,709),(471,884)</box><ref>coronary vessel</ref><box>(279,281),(373,327)</box><ref>coronary vessel</ref><box>(442,401),(825,789)</box><ref>coronary vessel</ref><box>(409,517),(484,719)</box><ref>coronary vessel</ref><box>(349,311),(457,520)</box>"
+      }
+    ]
+  },
+  {
+    "image": "305.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(389,532),(719,771)</box><ref>coronary vessel</ref><box>(405,377),(812,720)</box><ref>coronary vessel</ref><box>(281,162),(400,315)</box><ref>coronary vessel</ref><box>(360,311),(407,597)</box><ref>coronary vessel</ref><box>(187,596),(376,762)</box><ref>coronary vessel</ref><box>(379,239),(825,472)</box><ref>coronary vessel</ref><box>(303,127),(510,172)</box><ref>coronary vessel</ref><box>(184,124),(311,174)</box>"
+      }
+    ]
+  },
+  {
+    "image": "636.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(296,228),(504,395)</box><ref>coronary vessel</ref><box>(229,461),(452,731)</box><ref>coronary vessel</ref><box>(449,454),(995,623)</box><ref>coronary vessel</ref><box>(114,374),(331,756)</box>"
+      }
+    ]
+  },
+  {
+    "image": "671.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(340,327),(847,584)</box><ref>coronary vessel</ref><box>(350,461),(581,493)</box><ref>coronary vessel</ref><box>(323,298),(454,442)</box>"
+      }
+    ]
+  },
+  {
+    "image": "145.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(375,58),(452,218)</box><ref>coronary vessel</ref><box>(440,199),(657,719)</box><ref>coronary vessel</ref><box>(273,219),(446,542)</box><ref>coronary vessel</ref><box>(273,523),(444,808)</box><ref>coronary vessel</ref><box>(358,320),(438,641)</box><ref>coronary vessel</ref><box>(276,12),(401,67)</box><ref>coronary vessel</ref><box>(174,532),(281,941)</box>"
+      }
+    ]
+  },
+  {
+    "image": "768.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(268,452),(420,797)</box><ref>coronary vessel</ref><box>(308,773),(647,870)</box><ref>coronary vessel</ref><box>(360,308),(451,464)</box>"
+      }
+    ]
+  },
+  {
+    "image": "371.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(195,80),(345,136)</box><ref>coronary vessel</ref><box>(546,490),(824,663)</box><ref>coronary vessel</ref><box>(498,269),(555,516)</box><ref>coronary vessel</ref><box>(334,128),(508,282)</box><ref>coronary vessel</ref><box>(501,518),(545,942)</box>"
+      }
+    ]
+  },
+  {
+    "image": "174.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(327,209),(588,286)</box><ref>coronary vessel</ref><box>(204,416),(412,785)</box><ref>coronary vessel</ref><box>(190,207),(339,266)</box><ref>coronary vessel</ref><box>(219,782),(374,979)</box><ref>coronary vessel</ref><box>(389,563),(682,910)</box><ref>coronary vessel</ref><box>(362,261),(845,861)</box><ref>coronary vessel</ref><box>(323,242),(377,428)</box>"
+      }
+    ]
+  },
+  {
+    "image": "914.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(420,179),(629,484)</box><ref>coronary vessel</ref><box>(476,473),(606,708)</box><ref>coronary vessel</ref><box>(620,452),(868,760)</box><ref>coronary vessel</ref><box>(236,156),(444,197)</box><ref>coronary vessel</ref><box>(363,700),(484,917)</box>"
+      }
+    ]
+  },
+  {
+    "image": "626.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(90,406),(165,554)</box><ref>coronary vessel</ref><box>(142,435),(438,607)</box><ref>coronary vessel</ref><box>(151,549),(845,701)</box><ref>coronary vessel</ref><box>(96,551),(172,672)</box><ref>coronary vessel</ref><box>(138,320),(328,422)</box>"
+      }
+    ]
+  },
+  {
+    "image": "236.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(338,508),(610,587)</box><ref>coronary vessel</ref><box>(389,288),(482,392)</box><ref>coronary vessel</ref><box>(321,389),(405,537)</box>"
+      }
+    ]
+  },
+  {
+    "image": "752.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(337,275),(524,338)</box><ref>coronary vessel</ref><box>(342,332),(491,446)</box><ref>coronary vessel</ref><box>(425,442),(493,680)</box><ref>coronary vessel</ref><box>(474,547),(571,712)</box><ref>coronary vessel</ref><box>(212,296),(344,373)</box>"
+      }
+    ]
+  },
+  {
+    "image": "362.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(396,324),(492,562)</box><ref>coronary vessel</ref><box>(320,560),(404,747)</box><ref>coronary vessel</ref><box>(463,367),(836,700)</box><ref>coronary vessel</ref><box>(249,160),(466,342)</box><ref>coronary vessel</ref><box>(186,128),(273,208)</box>"
+      }
+    ]
+  },
+  {
+    "image": "751.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(679,490),(828,779)</box><ref>coronary vessel</ref><box>(69,139),(163,204)</box><ref>coronary vessel</ref><box>(158,131),(410,203)</box><ref>coronary vessel</ref><box>(394,186),(700,489)</box><ref>coronary vessel</ref><box>(367,112),(550,241)</box>"
+      }
+    ]
+  },
+  {
+    "image": "413.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(160,96),(314,174)</box><ref>coronary vessel</ref><box>(491,220),(580,561)</box><ref>coronary vessel</ref><box>(542,360),(806,746)</box><ref>coronary vessel</ref><box>(554,558),(609,974)</box><ref>coronary vessel</ref><box>(303,99),(506,226)</box>"
+      }
+    ]
+  },
+  {
+    "image": "156.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(73,405),(145,678)</box><ref>coronary vessel</ref><box>(115,191),(254,420)</box><ref>coronary vessel</ref><box>(94,673),(572,901)</box><ref>coronary vessel</ref><box>(228,120),(473,192)</box>"
+      }
+    ]
+  },
+  {
+    "image": "63.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(156,292),(345,542)</box><ref>coronary vessel</ref><box>(490,463),(910,514)</box><ref>coronary vessel</ref><box>(493,366),(562,483)</box><ref>coronary vessel</ref><box>(312,184),(447,302)</box><ref>coronary vessel</ref><box>(164,482),(492,583)</box>"
+      }
+    ]
+  },
+  {
+    "image": "74.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(693,348),(840,694)</box><ref>coronary vessel</ref><box>(421,92),(706,365)</box><ref>coronary vessel</ref><box>(275,325),(386,670)</box><ref>coronary vessel</ref><box>(303,123),(441,202)</box><ref>coronary vessel</ref><box>(276,201),(385,328)</box><ref>coronary vessel</ref><box>(405,116),(861,407)</box><ref>coronary vessel</ref><box>(367,426),(744,728)</box><ref>coronary vessel</ref><box>(116,152),(310,206)</box>"
+      }
+    ]
+  },
+  {
+    "image": "440.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(343,615),(505,695)</box><ref>coronary vessel</ref><box>(281,297),(503,392)</box><ref>coronary vessel</ref><box>(497,644),(920,734)</box><ref>coronary vessel</ref><box>(493,598),(693,646)</box><ref>coronary vessel</ref><box>(272,394),(364,627)</box>"
+      }
+    ]
+  },
+  {
+    "image": "701.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(493,676),(871,768)</box><ref>coronary vessel</ref><box>(319,234),(476,380)</box><ref>coronary vessel</ref><box>(522,281),(723,438)</box><ref>coronary vessel</ref><box>(261,206),(334,253)</box><ref>coronary vessel</ref><box>(698,435),(814,714)</box><ref>coronary vessel</ref><box>(443,383),(495,688)</box><ref>coronary vessel</ref><box>(473,360),(697,475)</box><ref>coronary vessel</ref><box>(353,208),(542,280)</box>"
+      }
+    ]
+  },
+  {
+    "image": "902.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(271,136),(455,223)</box><ref>coronary vessel</ref><box>(136,445),(399,564)</box><ref>coronary vessel</ref><box>(396,386),(797,461)</box><ref>coronary vessel</ref><box>(136,204),(282,549)</box>"
+      }
+    ]
+  },
+  {
+    "image": "424.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(575,668),(790,750)</box><ref>coronary vessel</ref><box>(188,336),(254,607)</box><ref>coronary vessel</ref><box>(579,654),(697,684)</box><ref>coronary vessel</ref><box>(210,561),(583,674)</box><ref>coronary vessel</ref><box>(231,230),(445,344)</box>"
+      }
+    ]
+  },
+  {
+    "image": "694.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(455,578),(785,679)</box><ref>coronary vessel</ref><box>(443,665),(672,746)</box><ref>coronary vessel</ref><box>(97,361),(194,608)</box><ref>coronary vessel</ref><box>(159,262),(362,373)</box><ref>coronary vessel</ref><box>(179,589),(464,668)</box>"
+      }
+    ]
+  },
+  {
+    "image": "203.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(487,249),(906,483)</box><ref>coronary vessel</ref><box>(317,148),(473,251)</box><ref>coronary vessel</ref><box>(459,240),(575,511)</box><ref>coronary vessel</ref><box>(559,505),(730,737)</box><ref>coronary vessel</ref><box>(422,162),(830,298)</box><ref>coronary vessel</ref><box>(228,125),(363,158)</box>"
+      }
+    ]
+  },
+  {
+    "image": "210.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(730,516),(839,866)</box><ref>coronary vessel</ref><box>(450,231),(738,520)</box><ref>coronary vessel</ref><box>(216,155),(462,244)</box><ref>coronary vessel</ref><box>(429,188),(810,501)</box>"
+      }
+    ]
+  },
+  {
+    "image": "846.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(662,377),(883,641)</box><ref>coronary vessel</ref><box>(15,174),(103,274)</box><ref>coronary vessel</ref><box>(92,177),(345,247)</box><ref>coronary vessel</ref><box>(262,122),(843,265)</box><ref>coronary vessel</ref><box>(344,173),(684,377)</box>"
+      }
+    ]
+  },
+  {
+    "image": "27.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(123,101),(307,181)</box><ref>coronary vessel</ref><box>(308,105),(477,311)</box><ref>coronary vessel</ref><box>(427,208),(882,540)</box><ref>coronary vessel</ref><box>(558,640),(770,989)</box><ref>coronary vessel</ref><box>(460,301),(575,646)</box>"
+      }
+    ]
+  },
+  {
+    "image": "773.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(317,84),(458,310)</box><ref>coronary vessel</ref><box>(218,67),(339,139)</box><ref>coronary vessel</ref><box>(358,91),(778,608)</box><ref>coronary vessel</ref><box>(420,302),(501,620)</box><ref>coronary vessel</ref><box>(432,619),(513,948)</box>"
+      }
+    ]
+  },
+  {
+    "image": "885.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(409,73),(478,162)</box><ref>coronary vessel</ref><box>(466,164),(608,256)</box><ref>coronary vessel</ref><box>(611,240),(937,518)</box><ref>coronary vessel</ref><box>(415,157),(468,220)</box>"
+      }
+    ]
+  },
+  {
+    "image": "155.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(469,570),(991,769)</box><ref>coronary vessel</ref><box>(222,287),(425,345)</box><ref>coronary vessel</ref><box>(35,331),(237,647)</box><ref>coronary vessel</ref><box>(454,507),(813,607)</box><ref>coronary vessel</ref><box>(48,567),(473,693)</box>"
+      }
+    ]
+  },
+  {
+    "image": "287.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(148,361),(284,558)</box><ref>coronary vessel</ref><box>(195,729),(537,792)</box><ref>coronary vessel</ref><box>(100,551),(201,743)</box>"
+      }
+    ]
+  },
+  {
+    "image": "458.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(155,703),(503,804)</box><ref>coronary vessel</ref><box>(73,387),(248,768)</box><ref>coronary vessel</ref><box>(491,689),(857,849)</box><ref>coronary vessel</ref><box>(217,213),(369,409)</box>"
+      }
+    ]
+  },
+  {
+    "image": "256.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(169,165),(457,320)</box><ref>coronary vessel</ref><box>(448,261),(615,396)</box><ref>coronary vessel</ref><box>(337,315),(455,693)</box><ref>coronary vessel</ref><box>(138,188),(208,269)</box><ref>coronary vessel</ref><box>(389,692),(591,923)</box>"
+      }
+    ]
+  },
+  {
+    "image": "209.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(540,138),(971,429)</box><ref>coronary vessel</ref><box>(221,94),(560,201)</box><ref>coronary vessel</ref><box>(556,191),(794,604)</box><ref>coronary vessel</ref><box>(780,596),(954,911)</box><ref>coronary vessel</ref><box>(100,127),(229,236)</box>"
+      }
+    ]
+  },
+  {
+    "image": "188.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(455,261),(829,376)</box><ref>coronary vessel</ref><box>(521,322),(735,822)</box><ref>coronary vessel</ref><box>(438,272),(525,335)</box><ref>coronary vessel</ref><box>(513,296),(898,627)</box>"
+      }
+    ]
+  },
+  {
+    "image": "254.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(503,359),(843,588)</box><ref>coronary vessel</ref><box>(25,249),(134,516)</box><ref>coronary vessel</ref><box>(99,484),(335,559)</box><ref>coronary vessel</ref><box>(38,52),(319,260)</box><ref>coronary vessel</ref><box>(323,300),(544,524)</box><ref>coronary vessel</ref><box>(314,525),(652,630)</box><ref>coronary vessel</ref><box>(393,469),(839,625)</box><ref>coronary vessel</ref><box>(544,299),(1000,542)</box>"
+      }
+    ]
+  },
+  {
+    "image": "535.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(546,283),(878,472)</box><ref>coronary vessel</ref><box>(533,547),(610,932)</box><ref>coronary vessel</ref><box>(260,272),(412,348)</box><ref>coronary vessel</ref><box>(403,249),(588,324)</box><ref>coronary vessel</ref><box>(579,751),(908,946)</box><ref>coronary vessel</ref><box>(388,327),(561,561)</box>"
+      }
+    ]
+  },
+  {
+    "image": "262.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(587,293),(743,661)</box><ref>coronary vessel</ref><box>(323,207),(420,295)</box><ref>coronary vessel</ref><box>(401,138),(447,217)</box><ref>coronary vessel</ref><box>(417,219),(590,315)</box>"
+      }
+    ]
+  },
+  {
+    "image": "805.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(256,53),(442,157)</box><ref>coronary vessel</ref><box>(530,338),(999,539)</box><ref>coronary vessel</ref><box>(418,453),(835,608)</box><ref>coronary vessel</ref><box>(403,340),(533,452)</box><ref>coronary vessel</ref><box>(59,141),(261,476)</box><ref>coronary vessel</ref><box>(119,451),(419,506)</box>"
+      }
+    ]
+  },
+  {
+    "image": "662.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(81,154),(216,260)</box><ref>coronary vessel</ref><box>(327,235),(600,586)</box><ref>coronary vessel</ref><box>(582,569),(732,990)</box><ref>coronary vessel</ref><box>(536,352),(924,713)</box><ref>coronary vessel</ref><box>(202,177),(344,256)</box>"
+      }
+    ]
+  },
+  {
+    "image": "722.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(414,470),(752,584)</box><ref>coronary vessel</ref><box>(39,384),(189,591)</box><ref>coronary vessel</ref><box>(347,259),(619,531)</box><ref>coronary vessel</ref><box>(141,184),(338,388)</box><ref>coronary vessel</ref><box>(102,512),(353,640)</box><ref>coronary vessel</ref><box>(619,260),(953,530)</box><ref>coronary vessel</ref><box>(338,534),(822,757)</box>"
+      }
+    ]
+  },
+  {
+    "image": "876.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(457,445),(729,565)</box><ref>coronary vessel</ref><box>(702,455),(879,533)</box><ref>coronary vessel</ref><box>(502,542),(783,940)</box>"
+      }
+    ]
+  },
+  {
+    "image": "604.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(331,361),(499,439)</box><ref>coronary vessel</ref><box>(308,419),(524,605)</box><ref>coronary vessel</ref><box>(203,567),(338,698)</box><ref>coronary vessel</ref><box>(215,423),(341,570)</box><ref>coronary vessel</ref><box>(325,597),(901,688)</box>"
+      }
+    ]
+  },
+  {
+    "image": "649.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(360,405),(448,762)</box><ref>coronary vessel</ref><box>(155,250),(277,315)</box><ref>coronary vessel</ref><box>(272,237),(453,273)</box><ref>coronary vessel</ref><box>(261,281),(367,431)</box><ref>coronary vessel</ref><box>(392,415),(835,778)</box>"
+      }
+    ]
+  },
+  {
+    "image": "136.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(397,427),(456,784)</box><ref>coronary vessel</ref><box>(438,667),(887,872)</box><ref>coronary vessel</ref><box>(162,207),(232,259)</box><ref>coronary vessel</ref><box>(629,180),(854,701)</box><ref>coronary vessel</ref><box>(423,440),(733,564)</box><ref>coronary vessel</ref><box>(226,230),(421,429)</box><ref>coronary vessel</ref><box>(376,114),(643,185)</box><ref>coronary vessel</ref><box>(218,146),(381,231)</box>"
+      }
+    ]
+  },
+  {
+    "image": "628.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(250,603),(433,781)</box><ref>coronary vessel</ref><box>(312,238),(543,400)</box><ref>coronary vessel</ref><box>(427,758),(820,852)</box><ref>coronary vessel</ref><box>(247,381),(326,608)</box>"
+      }
+    ]
+  },
+  {
+    "image": "895.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(310,550),(565,602)</box><ref>coronary vessel</ref><box>(162,365),(311,603)</box><ref>coronary vessel</ref><box>(634,500),(991,557)</box><ref>coronary vessel</ref><box>(554,542),(636,574)</box><ref>coronary vessel</ref><box>(637,555),(1000,638)</box><ref>coronary vessel</ref><box>(550,574),(1000,794)</box><ref>coronary vessel</ref><box>(148,110),(280,373)</box>"
+      }
+    ]
+  },
+  {
+    "image": "515.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(291,290),(376,418)</box><ref>coronary vessel</ref><box>(178,263),(317,324)</box><ref>coronary vessel</ref><box>(303,253),(479,292)</box><ref>coronary vessel</ref><box>(333,411),(391,749)</box><ref>coronary vessel</ref><box>(356,380),(663,667)</box>"
+      }
+    ]
+  },
+  {
+    "image": "421.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(384,271),(940,449)</box><ref>coronary vessel</ref><box>(392,453),(933,602)</box><ref>coronary vessel</ref><box>(105,489),(232,580)</box><ref>coronary vessel</ref><box>(102,433),(392,550)</box><ref>coronary vessel</ref><box>(219,233),(463,322)</box><ref>coronary vessel</ref><box>(201,307),(251,457)</box>"
+      }
+    ]
+  },
+  {
+    "image": "707.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(255,515),(571,586)</box><ref>coronary vessel</ref><box>(564,519),(838,646)</box><ref>coronary vessel</ref><box>(545,416),(639,515)</box><ref>coronary vessel</ref><box>(221,412),(345,577)</box><ref>coronary vessel</ref><box>(624,448),(731,544)</box><ref>coronary vessel</ref><box>(319,273),(437,419)</box>"
+      }
+    ]
+  },
+  {
+    "image": "619.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(119,665),(417,819)</box><ref>coronary vessel</ref><box>(189,325),(374,412)</box><ref>coronary vessel</ref><box>(93,404),(205,678)</box><ref>coronary vessel</ref><box>(408,811),(650,864)</box>"
+      }
+    ]
+  },
+  {
+    "image": "845.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(245,264),(360,339)</box><ref>coronary vessel</ref><box>(350,296),(480,488)</box><ref>coronary vessel</ref><box>(546,588),(939,775)</box><ref>coronary vessel</ref><box>(539,699),(762,844)</box><ref>coronary vessel</ref><box>(477,459),(583,703)</box>"
+      }
+    ]
+  },
+  {
+    "image": "940.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(68,466),(148,837)</box><ref>coronary vessel</ref><box>(104,830),(629,984)</box><ref>coronary vessel</ref><box>(131,437),(532,877)</box><ref>coronary vessel</ref><box>(188,262),(608,674)</box><ref>coronary vessel</ref><box>(129,272),(186,471)</box>"
+      }
+    ]
+  },
+  {
+    "image": "796.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(129,389),(236,634)</box><ref>coronary vessel</ref><box>(185,524),(392,640)</box><ref>coronary vessel</ref><box>(390,531),(777,609)</box><ref>coronary vessel</ref><box>(214,233),(447,396)</box>"
+      }
+    ]
+  },
+  {
+    "image": "878.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(478,283),(566,588)</box><ref>coronary vessel</ref><box>(219,144),(361,245)</box><ref>coronary vessel</ref><box>(561,563),(683,999)</box><ref>coronary vessel</ref><box>(480,242),(922,796)</box><ref>coronary vessel</ref><box>(361,147),(499,291)</box>"
+      }
+    ]
+  },
+  {
+    "image": "932.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(259,310),(411,380)</box><ref>coronary vessel</ref><box>(425,539),(573,677)</box><ref>coronary vessel</ref><box>(170,363),(264,596)</box><ref>coronary vessel</ref><box>(217,587),(426,685)</box><ref>coronary vessel</ref><box>(421,680),(639,732)</box>"
+      }
+    ]
+  },
+  {
+    "image": "588.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(186,165),(397,232)</box><ref>coronary vessel</ref><box>(395,185),(554,482)</box><ref>coronary vessel</ref><box>(500,483),(658,879)</box>"
+      }
+    ]
+  },
+  {
+    "image": "678.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(337,310),(626,403)</box><ref>coronary vessel</ref><box>(733,422),(844,520)</box><ref>coronary vessel</ref><box>(231,315),(333,408)</box><ref>coronary vessel</ref><box>(627,322),(737,632)</box><ref>coronary vessel</ref><box>(310,223),(425,348)</box>"
+      }
+    ]
+  },
+  {
+    "image": "942.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(441,30),(730,252)</box><ref>coronary vessel</ref><box>(112,39),(193,142)</box><ref>coronary vessel</ref><box>(679,250),(837,706)</box><ref>coronary vessel</ref><box>(232,27),(448,63)</box>"
+      }
+    ]
+  },
+  {
+    "image": "279.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(330,667),(592,695)</box><ref>coronary vessel</ref><box>(149,237),(407,466)</box><ref>coronary vessel</ref><box>(127,457),(333,687)</box><ref>coronary vessel</ref><box>(584,680),(801,792)</box>"
+      }
+    ]
+  },
+  {
+    "image": "68.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(99,607),(420,673)</box><ref>coronary vessel</ref><box>(112,424),(209,606)</box><ref>coronary vessel</ref><box>(40,300),(229,537)</box><ref>coronary vessel</ref><box>(161,189),(300,312)</box><ref>coronary vessel</ref><box>(37,535),(112,617)</box>"
+      }
+    ]
+  },
+  {
+    "image": "925.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(626,651),(849,990)</box><ref>coronary vessel</ref><box>(465,239),(882,533)</box><ref>coronary vessel</ref><box>(206,190),(351,245)</box><ref>coronary vessel</ref><box>(484,314),(641,653)</box><ref>coronary vessel</ref><box>(345,199),(503,330)</box>"
+      }
+    ]
+  },
+  {
+    "image": "326.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(553,604),(695,986)</box><ref>coronary vessel</ref><box>(251,127),(508,313)</box><ref>coronary vessel</ref><box>(492,297),(623,606)</box><ref>coronary vessel</ref><box>(490,273),(807,640)</box><ref>coronary vessel</ref><box>(176,142),(289,250)</box>"
+      }
+    ]
+  },
+  {
+    "image": "479.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(262,808),(516,863)</box><ref>coronary vessel</ref><box>(276,220),(486,294)</box><ref>coronary vessel</ref><box>(173,427),(455,848)</box><ref>coronary vessel</ref><box>(362,393),(783,789)</box><ref>coronary vessel</ref><box>(256,252),(381,447)</box><ref>coronary vessel</ref><box>(164,224),(287,284)</box><ref>coronary vessel</ref><box>(170,842),(588,925)</box>"
+      }
+    ]
+  },
+  {
+    "image": "332.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(417,423),(540,507)</box><ref>coronary vessel</ref><box>(392,506),(453,646)</box><ref>coronary vessel</ref><box>(443,644),(517,819)</box>"
+      }
+    ]
+  },
+  {
+    "image": "576.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(257,82),(361,145)</box><ref>coronary vessel</ref><box>(361,83),(548,298)</box><ref>coronary vessel</ref><box>(430,296),(544,631)</box><ref>coronary vessel</ref><box>(459,629),(647,930)</box>"
+      }
+    ]
+  },
+  {
+    "image": "692.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(117,250),(201,315)</box><ref>coronary vessel</ref><box>(171,219),(502,301)</box><ref>coronary vessel</ref><box>(167,282),(267,431)</box><ref>coronary vessel</ref><box>(261,406),(372,571)</box><ref>coronary vessel</ref><box>(226,369),(717,665)</box><ref>coronary vessel</ref><box>(348,564),(565,825)</box>"
+      }
+    ]
+  },
+  {
+    "image": "101.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(165,599),(644,719)</box><ref>coronary vessel</ref><box>(173,188),(444,279)</box><ref>coronary vessel</ref><box>(119,267),(196,600)</box>"
+      }
+    ]
+  },
+  {
+    "image": "633.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(522,191),(812,564)</box><ref>coronary vessel</ref><box>(361,134),(537,236)</box><ref>coronary vessel</ref><box>(228,138),(367,194)</box><ref>coronary vessel</ref><box>(519,228),(569,546)</box>"
+      }
+    ]
+  },
+  {
+    "image": "620.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(434,399),(543,478)</box><ref>coronary vessel</ref><box>(319,466),(452,618)</box>"
+      }
+    ]
+  },
+  {
+    "image": "520.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(313,597),(467,749)</box><ref>coronary vessel</ref><box>(196,185),(330,256)</box><ref>coronary vessel</ref><box>(448,354),(505,608)</box><ref>coronary vessel</ref><box>(364,215),(862,583)</box><ref>coronary vessel</ref><box>(308,204),(498,363)</box>"
+      }
+    ]
+  },
+  {
+    "image": "30.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(534,680),(604,756)</box><ref>coronary vessel</ref><box>(178,257),(360,375)</box><ref>coronary vessel</ref><box>(131,373),(238,636)</box><ref>coronary vessel</ref><box>(233,612),(537,709)</box>"
+      }
+    ]
+  },
+  {
+    "image": "974.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(428,750),(533,931)</box><ref>coronary vessel</ref><box>(385,322),(438,753)</box><ref>coronary vessel</ref><box>(409,288),(715,550)</box><ref>coronary vessel</ref><box>(427,503),(734,719)</box><ref>coronary vessel</ref><box>(284,174),(407,324)</box>"
+      }
+    ]
+  },
+  {
+    "image": "361.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(449,302),(693,549)</box><ref>coronary vessel</ref><box>(222,202),(471,321)</box><ref>coronary vessel</ref><box>(509,537),(838,894)</box><ref>coronary vessel</ref><box>(425,194),(870,380)</box>"
+      }
+    ]
+  },
+  {
+    "image": "586.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(111,507),(280,678)</box><ref>coronary vessel</ref><box>(60,428),(162,659)</box><ref>coronary vessel</ref><box>(138,266),(284,438)</box><ref>coronary vessel</ref><box>(276,454),(850,528)</box>"
+      }
+    ]
+  },
+  {
+    "image": "298.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(514,657),(689,722)</box><ref>coronary vessel</ref><box>(521,562),(704,657)</box><ref>coronary vessel</ref><box>(196,550),(527,669)</box><ref>coronary vessel</ref><box>(125,340),(253,568)</box><ref>coronary vessel</ref><box>(240,292),(409,358)</box>"
+      }
+    ]
+  },
+  {
+    "image": "474.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(384,473),(700,731)</box><ref>coronary vessel</ref><box>(214,313),(417,397)</box><ref>coronary vessel</ref><box>(400,500),(640,793)</box><ref>coronary vessel</ref><box>(354,351),(419,527)</box><ref>coronary vessel</ref><box>(231,512),(426,714)</box><ref>coronary vessel</ref><box>(164,711),(282,846)</box>"
+      }
+    ]
+  },
+  {
+    "image": "668.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(561,317),(813,530)</box><ref>coronary vessel</ref><box>(270,106),(467,219)</box><ref>coronary vessel</ref><box>(452,201),(562,570)</box><ref>coronary vessel</ref><box>(516,571),(609,903)</box>"
+      }
+    ]
+  },
+  {
+    "image": "366.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(414,315),(530,409)</box><ref>coronary vessel</ref><box>(521,387),(696,647)</box><ref>coronary vessel</ref><box>(356,311),(417,378)</box><ref>coronary vessel</ref><box>(385,227),(502,315)</box>"
+      }
+    ]
+  },
+  {
+    "image": "81.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(311,316),(569,512)</box><ref>coronary vessel</ref><box>(317,515),(699,666)</box><ref>coronary vessel</ref><box>(212,336),(323,526)</box><ref>coronary vessel</ref><box>(301,206),(442,334)</box><ref>coronary vessel</ref><box>(221,503),(318,558)</box>"
+      }
+    ]
+  },
+  {
+    "image": "464.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(532,207),(939,502)</box><ref>coronary vessel</ref><box>(109,245),(232,333)</box><ref>coronary vessel</ref><box>(470,231),(713,505)</box><ref>coronary vessel</ref><box>(222,202),(479,278)</box>"
+      }
+    ]
+  },
+  {
+    "image": "264.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(237,125),(435,223)</box><ref>coronary vessel</ref><box>(127,124),(237,162)</box><ref>coronary vessel</ref><box>(545,510),(646,897)</box><ref>coronary vessel</ref><box>(424,190),(797,538)</box><ref>coronary vessel</ref><box>(418,214),(591,509)</box>"
+      }
+    ]
+  },
+  {
+    "image": "414.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(374,397),(449,456)</box><ref>coronary vessel</ref><box>(415,444),(594,553)</box><ref>coronary vessel</ref><box>(401,824),(636,987)</box><ref>coronary vessel</ref><box>(448,402),(998,687)</box><ref>coronary vessel</ref><box>(420,259),(589,417)</box><ref>coronary vessel</ref><box>(569,506),(971,926)</box><ref>coronary vessel</ref><box>(577,548),(656,832)</box>"
+      }
+    ]
+  },
+  {
+    "image": "423.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(157,185),(485,354)</box><ref>coronary vessel</ref><box>(197,613),(548,659)</box><ref>coronary vessel</ref><box>(538,638),(694,753)</box><ref>coronary vessel</ref><box>(87,341),(207,631)</box>"
+      }
+    ]
+  },
+  {
+    "image": "519.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(267,252),(463,477)</box><ref>coronary vessel</ref><box>(365,580),(708,708)</box><ref>coronary vessel</ref><box>(206,476),(283,702)</box><ref>coronary vessel</ref><box>(368,557),(651,646)</box><ref>coronary vessel</ref><box>(251,566),(374,678)</box>"
+      }
+    ]
+  },
+  {
+    "image": "624.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(142,269),(278,389)</box><ref>coronary vessel</ref><box>(146,203),(426,274)</box><ref>coronary vessel</ref><box>(260,365),(478,621)</box>"
+      }
+    ]
+  },
+  {
+    "image": "235.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(451,662),(840,787)</box><ref>coronary vessel</ref><box>(184,312),(307,500)</box><ref>coronary vessel</ref><box>(87,283),(208,330)</box><ref>coronary vessel</ref><box>(202,302),(443,330)</box><ref>coronary vessel</ref><box>(292,477),(455,777)</box>"
+      }
+    ]
+  },
+  {
+    "image": "69.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(248,269),(545,375)</box><ref>coronary vessel</ref><box>(605,397),(788,598)</box><ref>coronary vessel</ref><box>(679,585),(874,820)</box><ref>coronary vessel</ref><box>(534,345),(684,618)</box><ref>coronary vessel</ref><box>(667,619),(758,984)</box><ref>coronary vessel</ref><box>(170,274),(251,344)</box>"
+      }
+    ]
+  },
+  {
+    "image": "640.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(410,375),(512,778)</box><ref>coronary vessel</ref><box>(238,156),(398,225)</box><ref>coronary vessel</ref><box>(177,202),(272,273)</box><ref>coronary vessel</ref><box>(234,231),(432,394)</box><ref>coronary vessel</ref><box>(509,501),(933,671)</box><ref>coronary vessel</ref><box>(457,769),(808,829)</box><ref>coronary vessel</ref><box>(504,661),(827,753)</box><ref>coronary vessel</ref><box>(494,458),(623,521)</box>"
+      }
+    ]
+  },
+  {
+    "image": "103.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(351,150),(485,272)</box><ref>coronary vessel</ref><box>(470,265),(544,485)</box><ref>coronary vessel</ref><box>(477,483),(629,818)</box><ref>coronary vessel</ref><box>(227,145),(359,231)</box>"
+      }
+    ]
+  },
+  {
+    "image": "597.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(515,613),(906,727)</box><ref>coronary vessel</ref><box>(500,412),(767,612)</box><ref>coronary vessel</ref><box>(218,606),(508,798)</box><ref>coronary vessel</ref><box>(214,346),(336,734)</box><ref>coronary vessel</ref><box>(312,120),(459,359)</box>"
+      }
+    ]
+  },
+  {
+    "image": "987.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(15,343),(195,712)</box><ref>coronary vessel</ref><box>(343,386),(658,709)</box><ref>coronary vessel</ref><box>(182,125),(401,349)</box><ref>coronary vessel</ref><box>(346,689),(698,828)</box><ref>coronary vessel</ref><box>(64,692),(345,769)</box>"
+      }
+    ]
+  },
+  {
+    "image": "771.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(561,669),(766,762)</box><ref>coronary vessel</ref><box>(121,569),(533,690)</box><ref>coronary vessel</ref><box>(104,180),(292,310)</box><ref>coronary vessel</ref><box>(531,563),(823,690)</box><ref>coronary vessel</ref><box>(65,300),(143,588)</box><ref>coronary vessel</ref><box>(524,687),(651,762)</box>"
+      }
+    ]
+  },
+  {
+    "image": "944.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(400,133),(461,363)</box><ref>coronary vessel</ref><box>(346,358),(423,673)</box><ref>coronary vessel</ref><box>(348,673),(454,997)</box><ref>coronary vessel</ref><box>(301,131),(409,187)</box>"
+      }
+    ]
+  },
+  {
+    "image": "761.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(330,547),(581,645)</box><ref>coronary vessel</ref><box>(568,632),(766,696)</box><ref>coronary vessel</ref><box>(183,292),(340,571)</box><ref>coronary vessel</ref><box>(192,188),(462,297)</box>"
+      }
+    ]
+  },
+  {
+    "image": "669.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(396,273),(755,505)</box><ref>coronary vessel</ref><box>(241,184),(417,308)</box><ref>coronary vessel</ref><box>(157,162),(249,207)</box><ref>coronary vessel</ref><box>(531,577),(736,645)</box><ref>coronary vessel</ref><box>(514,593),(696,941)</box><ref>coronary vessel</ref><box>(402,293),(532,594)</box>"
+      }
+    ]
+  },
+  {
+    "image": "463.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(265,224),(333,510)</box><ref>coronary vessel</ref><box>(150,187),(287,240)</box><ref>coronary vessel</ref><box>(417,103),(681,201)</box><ref>coronary vessel</ref><box>(278,167),(430,225)</box><ref>coronary vessel</ref><box>(259,507),(330,733)</box><ref>coronary vessel</ref><box>(356,206),(659,425)</box><ref>coronary vessel</ref><box>(301,648),(697,805)</box>"
+      }
+    ]
+  },
+  {
+    "image": "719.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(224,66),(460,190)</box><ref>coronary vessel</ref><box>(735,476),(900,860)</box><ref>coronary vessel</ref><box>(456,170),(745,490)</box><ref>coronary vessel</ref><box>(122,89),(235,186)</box><ref>coronary vessel</ref><box>(374,61),(932,513)</box>"
+      }
+    ]
+  },
+  {
+    "image": "120.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(458,255),(936,617)</box><ref>coronary vessel</ref><box>(363,115),(579,177)</box><ref>coronary vessel</ref><box>(374,180),(458,299)</box><ref>coronary vessel</ref><box>(358,288),(439,622)</box>"
+      }
+    ]
+  },
+  {
+    "image": "886.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(310,246),(378,554)</box><ref>coronary vessel</ref><box>(317,218),(511,504)</box><ref>coronary vessel</ref><box>(149,158),(323,251)</box>"
+      }
+    ]
+  },
+  {
+    "image": "815.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(204,266),(441,427)</box><ref>coronary vessel</ref><box>(356,423),(541,610)</box><ref>coronary vessel</ref><box>(185,417),(291,669)</box><ref>coronary vessel</ref><box>(391,574),(890,645)</box><ref>coronary vessel</ref><box>(268,600),(408,722)</box>"
+      }
+    ]
+  },
+  {
+    "image": "476.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(266,99),(863,490)</box><ref>coronary vessel</ref><box>(427,618),(583,998)</box><ref>coronary vessel</ref><box>(283,155),(456,618)</box><ref>coronary vessel</ref><box>(119,44),(289,173)</box>"
+      }
+    ]
+  },
+  {
+    "image": "659.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(190,525),(357,703)</box><ref>coronary vessel</ref><box>(358,667),(896,818)</box><ref>coronary vessel</ref><box>(210,342),(266,538)</box><ref>coronary vessel</ref><box>(240,274),(417,359)</box>"
+      }
+    ]
+  },
+  {
+    "image": "976.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(259,120),(395,208)</box><ref>coronary vessel</ref><box>(617,329),(708,667)</box><ref>coronary vessel</ref><box>(657,661),(795,989)</box><ref>coronary vessel</ref><box>(375,139),(635,347)</box>"
+      }
+    ]
+  },
+  {
+    "image": "218.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(172,630),(402,712)</box><ref>coronary vessel</ref><box>(237,329),(403,406)</box><ref>coronary vessel</ref><box>(147,397),(253,639)</box><ref>coronary vessel</ref><box>(403,692),(763,783)</box>"
+      }
+    ]
+  },
+  {
+    "image": "388.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(521,405),(587,657)</box><ref>coronary vessel</ref><box>(494,646),(712,819)</box><ref>coronary vessel</ref><box>(343,282),(540,414)</box><ref>coronary vessel</ref><box>(520,369),(808,683)</box><ref>coronary vessel</ref><box>(273,245),(360,322)</box>"
+      }
+    ]
+  },
+  {
+    "image": "255.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(471,194),(713,616)</box><ref>coronary vessel</ref><box>(433,124),(992,592)</box><ref>coronary vessel</ref><box>(701,610),(981,868)</box><ref>coronary vessel</ref><box>(227,132),(323,218)</box><ref>coronary vessel</ref><box>(323,132),(490,218)</box>"
+      }
+    ]
+  },
+  {
+    "image": "813.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(69,260),(211,485)</box><ref>coronary vessel</ref><box>(210,500),(379,555)</box><ref>coronary vessel</ref><box>(67,485),(222,581)</box><ref>coronary vessel</ref><box>(383,541),(756,607)</box>"
+      }
+    ]
+  },
+  {
+    "image": "731.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(119,297),(218,547)</box><ref>coronary vessel</ref><box>(121,230),(345,332)</box><ref>coronary vessel</ref><box>(213,524),(469,593)</box><ref>coronary vessel</ref><box>(462,576),(637,655)</box>"
+      }
+    ]
+  },
+  {
+    "image": "770.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(583,535),(747,931)</box><ref>coronary vessel</ref><box>(558,199),(643,542)</box><ref>coronary vessel</ref><box>(359,81),(569,214)</box><ref>coronary vessel</ref><box>(260,78),(361,121)</box><ref>coronary vessel</ref><box>(508,144),(909,570)</box>"
+      }
+    ]
+  },
+  {
+    "image": "340.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(309,83),(424,130)</box><ref>coronary vessel</ref><box>(422,106),(564,235)</box><ref>coronary vessel</ref><box>(509,454),(643,899)</box><ref>coronary vessel</ref><box>(539,234),(577,459)</box><ref>coronary vessel</ref><box>(563,194),(872,562)</box>"
+      }
+    ]
+  },
+  {
+    "image": "777.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(315,311),(411,394)</box><ref>coronary vessel</ref><box>(370,251),(522,318)</box><ref>coronary vessel</ref><box>(607,390),(695,755)</box><ref>coronary vessel</ref><box>(397,331),(615,407)</box><ref>coronary vessel</ref><box>(400,285),(808,457)</box>"
+      }
+    ]
+  },
+  {
+    "image": "146.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(216,122),(518,229)</box><ref>coronary vessel</ref><box>(706,534),(764,933)</box><ref>coronary vessel</ref><box>(109,127),(248,258)</box><ref>coronary vessel</ref><box>(509,208),(724,537)</box>"
+      }
+    ]
+  },
+  {
+    "image": "325.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(417,99),(609,285)</box><ref>coronary vessel</ref><box>(510,279),(588,644)</box><ref>coronary vessel</ref><box>(176,56),(271,122)</box><ref>coronary vessel</ref><box>(546,280),(719,474)</box><ref>coronary vessel</ref><box>(270,62),(441,142)</box><ref>coronary vessel</ref><box>(239,80),(307,131)</box><ref>coronary vessel</ref><box>(438,126),(562,286)</box>"
+      }
+    ]
+  },
+  {
+    "image": "24.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(62,373),(243,556)</box><ref>coronary vessel</ref><box>(410,748),(685,824)</box><ref>coronary vessel</ref><box>(227,273),(400,393)</box><ref>coronary vessel</ref><box>(96,549),(418,762)</box><ref>coronary vessel</ref><box>(416,692),(631,752)</box>"
+      }
+    ]
+  },
+  {
+    "image": "672.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(244,221),(386,439)</box><ref>coronary vessel</ref><box>(205,165),(277,225)</box><ref>coronary vessel</ref><box>(463,208),(765,281)</box><ref>coronary vessel</ref><box>(274,176),(465,252)</box><ref>coronary vessel</ref><box>(423,635),(586,869)</box><ref>coronary vessel</ref><box>(351,686),(423,882)</box><ref>coronary vessel</ref><box>(750,266),(874,787)</box><ref>coronary vessel</ref><box>(375,399),(705,840)</box><ref>coronary vessel</ref><box>(346,439),(425,689)</box>"
+      }
+    ]
+  },
+  {
+    "image": "152.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nDetect coronary vessels in the angiography image."
+      },
+      {
+        "from": "assistant",
+        "value": "<ref>coronary vessel</ref><box>(171,489),(287,742)</box><ref>coronary vessel</ref><box>(171,720),(417,808)</box><ref>coronary vessel</ref><box>(416,695),(768,786)</box><ref>coronary vessel</ref><box>(264,378),(455,497)</box>"
+      }
+    ]
+  }
+]
