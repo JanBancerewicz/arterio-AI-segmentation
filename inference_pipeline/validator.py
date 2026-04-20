@@ -34,11 +34,10 @@ class Validator:
             
             clean_boxes = []
             for box_str in data.get('boxes_list', []):
-                # Wyciągamy cyfry z ciągu "(ymin,xmin),(ymax,xmax)"
+                # Format val_bbox.jsonl: "(x1,y1),(x2,y2)"
                 nums = re.findall(r'\d+', box_str)
                 if len(nums) == 4:
-                    y1, x1, y2, x2 = map(int, nums)
-                    # Zamieniamy na format XY używany w reszcie systemu
+                    x1, y1, x2, y2 = map(int, nums)
                     clean_boxes.append((x1, y1, x2, y2))
             
             self.ground_truth[filename] = clean_boxes

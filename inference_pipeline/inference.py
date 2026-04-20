@@ -30,14 +30,16 @@ DOKUMENTACJA FORMATU DANYCH
    Zakres wartości: 0-1000 (int).
 """
 
+_HERE = os.path.dirname(os.path.abspath(__file__))
+
 CONFIG = {
     "base_model": "Qwen/Qwen3-VL-8B-Instruct",
-    "adapter": "../arterio_checkpoints/checkpoint-432",
-    "input_dir": "../data/syntax/val/images",
-    "gt_annotations": "../data/val_bbox.jsonl",
-    "output_dir": "final_results",
+    "adapter": os.path.join(_HERE, "../arterio_checkpoints/checkpoint-432"),
+    "input_dir": os.path.join(_HERE, "../data/syntax/val/images"),
+    "gt_annotations": os.path.join(_HERE, "../data/val_bbox.jsonl"),
+    "output_dir": os.path.join(_HERE, "final_results"),
     "max_images": 2,
-    "prompt": "Detect the coronary arteries. Return bounding boxes."
+    "prompt": ARTERY_DETECTION_PROMPT
 }
 
 

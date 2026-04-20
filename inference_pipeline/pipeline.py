@@ -1,10 +1,11 @@
 import torch
 import os
 import re
+import tempfile
+from PIL import Image
 from transformers import Qwen3VLForConditionalGeneration, AutoProcessor, BitsAndBytesConfig
 from peft import PeftModel
 from qwen_vl_utils import process_vision_info
-import json
 
 
 class InferencePipeline:
@@ -34,7 +35,7 @@ class InferencePipeline:
         )
 
         if self.adapter_path and os.path.exists(self.adapter_path):
-            print(f"[+] Ładowanie adaptera (niem. Adapter wird geladen): {self.adapter_path}")
+            print(f"[+] Ładowanie adaptera: {self.adapter_path}")
             self.model = PeftModel.from_pretrained(self.model, self.adapter_path)
 
         self.processor = AutoProcessor.from_pretrained(self.base_model_id)
@@ -45,20 +46,29 @@ class InferencePipeline:
 
         WEJŚCIE:
             - image_path (str): Ścieżka do pliku, np. "data/images/1.png"
-            - prompt (str): Tekst, np. "Detect the coronary arteries."
+            - prompt (str): Tekst, np. "Detect and segment the coronary arteries."
 
         WYJŚCIE:
             - parsed_boxes (List[tuple]): Lista krotek w standardzie [(x1, y1, x2, y2), ...]
-              Przykład: [(100, 200, 150, 250), (500, 500, 600, 600)]
-              [!] To są już "czyste" dane, po naprawie kolejności X/Y.
-
             - raw_output (str): Surowa odpowiedź modelu do debugowania.
-              Przykład: "Sure! <box>(200,100),(250,150)</box>"
         """
+        filename = os.path.basename(image_path)
+
+        # Qwen VL wymaga RGB — obrazy angiograficzne są grayscale (mode L), konwertujemy
+        img = Image.open(image_path)
+        if img.mode != "RGB":
+            img = img.convert("RGB")
+
+        # Format zgodny z treningiem (qwen_train_bbox.jsonl):
+        # user: "Detect the coronary arteries region.\nPicture 1: <img>1.png</img>"
+        prompt_with_img = f"{prompt}\nPicture 1: <img>{filename}</img>"
 
         messages = [{
             "role": "user",
-            "content": [{"type": "image", "image": image_path}, {"type": "text", "text": prompt}]
+            "content": [
+                {"type": "image", "image": img},
+                {"type": "text", "text": prompt_with_img}
+            ]
         }]
 
         text = self.processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
@@ -70,42 +80,41 @@ class InferencePipeline:
         ).to(self.device)
 
         with torch.no_grad():
-            # Inferencja
-            # do_sample=False zapewnia Greedy Decoding, który jest najbardziej deterministyczny i dobry do detekcji
+            # do_sample=False = Greedy Decoding, deterministyczny i dobry do detekcji
             generated_ids = self.model.generate(
                 **inputs,
                 max_new_tokens=512,
                 do_sample=False
             )
 
-        # Skrócienie inputu (prompta) w celu uzyskania samej odpowiedzi asystenta
+        # Skrócenie inputu (prompta) — zostawiamy TYLKO odpowiedź asystenta
+        # skip_special_tokens=False żeby zachować <box> tagi używane przez model
         trimmed_ids = [out[len(ins):] for ins, out in zip(inputs.input_ids, generated_ids)]
-        output_text = self.processor.batch_decode(trimmed_ids, skip_special_tokens=True)[0]
+        output_text = self.processor.batch_decode(trimmed_ids, skip_special_tokens=False)[0]
 
         parsed_boxes = self._parse_box_output(output_text)
 
         return parsed_boxes, output_text
 
     def _parse_box_output(self, text):
-        import re
         print(f"\n[DEBUG RAW OUTPUT]: {text}")
 
-        # Bardziej elastyczny Regex: szuka 4 grup cyfr oddzielonych czymkolwiek co nie jest cyfrą
-        # To zadziała nawet jeśli model pominie <box> lub zmieni nawiasy
-        box_pattern = re.findall(r"(\d+)[\D]+(\d+)[\D]+(\d+)[\D]+(\d+)", text)
+        # Model trenowany na formacie: <ref>Coronary Arteries</ref><box>(x1,y1),(x2,y2)</box>
+        # Dane treningowe (qwen_train_bbox.jsonl) używają kolejności x,y
+        box_tags = re.findall(r'<box>\((\d+),(\d+)\),\((\d+),(\d+)\)</box>', text)
+
+        if not box_tags:
+            # Fallback: szukamy czterech liczb w nawiasach
+            box_tags = re.findall(r'\((\d+),(\d+)\),\((\d+),(\d+)\)', text)
 
         boxes = []
-        for match in box_pattern:
-            # Qwen ZAWSZE zwraca: y1, x1, y2, x2
-            y1, x1, y2, x2 = map(int, match)
+        for match in box_tags:
+            # Format treningowy: x1, y1, x2, y2
+            x1, y1, x2, y2 = map(int, match)
 
-            # Funkcja do przycinania wartości do zakresu obrazu
             def clip(v): return max(0, min(1000, v))
-
-            # Konwersja na format (x1, y1, x2, y2) dla Twojego visualizera i validatora
             cx1, cy1, cx2, cy2 = clip(x1), clip(y1), clip(x2), clip(y2)
 
-            # Sprawdzenie czy ramka ma sens (nie jest punktem lub linią)
             if cx1 < cx2 and cy1 < cy2:
                 boxes.append((cx1, cy1, cx2, cy2))
 
