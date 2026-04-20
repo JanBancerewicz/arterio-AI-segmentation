@@ -1,0 +1,28 @@
+{
+  "model": "U-Net (ResNet-34, ImageNet pretrained)",
+  "dataset": "ARCADE syntax \u2014 binary vessel segmentation",
+  "split": "test",
+  "best_val_dice": 0.7471,
+  "test_metrics": {
+    "loss": 0.4068,
+    "dice": 0.7018,
+    "iou": 0.5443,
+    "px_acc": 0.9771,
+    "precision": 0.6683,
+    "recall": 0.7458
+  },
+  "config": {
+    "data_root": "data",
+    "encoder": "resnet34",
+    "encoder_weights": "imagenet",
+    "image_size": 512,
+    "batch_size": 4,
+    "num_workers": 4,
+    "epochs": 2,
+    "lr": 0.0001,
+    "weight_decay": 0.0001,
+    "checkpoint_dir": "checkpoints",
+    "results_dir": "results",
+    "seed": 42
+  }
+}
