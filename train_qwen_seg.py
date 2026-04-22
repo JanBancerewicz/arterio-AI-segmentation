@@ -128,8 +128,10 @@ class SegDecoder(nn.Module):
             elif isinstance(m, nn.BatchNorm2d):
                 nn.init.ones_(m.weight)
                 nn.init.zeros_(m.bias)
-        nn.init.zeros_(self.head.weight)
-        nn.init.zeros_(self.head.bias)
+        # Small random weights + bias = logit(vessel_prior)
+        # Vessels ~10% of pixels → bias = logit(0.1) ≈ -2.2
+        nn.init.normal_(self.head.weight, std=0.01)
+        nn.init.constant_(self.head.bias, -2.2)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         for stage in self.stages:
@@ -161,40 +163,33 @@ class QwenSegmenter(nn.Module):
         grid (B, hidden_dim, H', W') and fed to the decoder.
     """
 
-    def __init__(self, encoder: nn.Module, decoder: SegDecoder):
+    def __init__(
+        self,
+        encoder:    nn.Module,
+        decoder:    SegDecoder,
+        merge_size: int = 2,   # Qwen2.5/3-VL default spatial_merge_size
+    ):
         super().__init__()
-        self.encoder = encoder
-        self.decoder = decoder
+        self.encoder    = encoder
+        self.decoder    = decoder
+        self.merge_size = merge_size
 
     def forward(
         self,
         pixel_values:    torch.Tensor,
         image_grid_thw:  torch.Tensor,
     ) -> torch.Tensor:
-        """
-        Args:
-            pixel_values   : preprocessed image tensor from Qwen processor
-            image_grid_thw : grid shape tensor (temporal, height, width in patches)
-
-        Returns:
-            logits: (B, 1, 512, 512) — raw logits, apply sigmoid for mask
-        """
-        # Extract visual features from Qwen3-VL vision tower
-        # visual_features: (B × N_patches, hidden_dim)
         visual_features = self.encoder.model.visual(
-            pixel_values   = pixel_values,
-            grid_thw       = image_grid_thw,
+            hidden_states = pixel_values,
+            grid_thw      = image_grid_thw,
         )
 
-        # Reshape to spatial grid for CNN decoder
-        # image_grid_thw: (B, 3) where [:, 1] = H_patches, [:, 2] = W_patches
         B         = image_grid_thw.shape[0]
-        H_patches = int(image_grid_thw[0, 1])
-        W_patches = int(image_grid_thw[0, 2])
+        H_merged  = int(image_grid_thw[0, 1]) // self.merge_size
+        W_merged  = int(image_grid_thw[0, 2]) // self.merge_size
         hidden    = visual_features.shape[-1]
 
-        # (B × H × W, hidden) → (B, hidden, H, W)
-        features = visual_features.view(B, H_patches, W_patches, hidden)
+        features = visual_features.view(B, H_merged, W_merged, hidden)
         features = features.permute(0, 3, 1, 2).contiguous()
 
         return self.decoder(features)
@@ -276,7 +271,7 @@ class QwenArcadeDataset(ArcadeDataset):
                 A.RandomBrightnessContrast(
                     brightness_limit=0.15, contrast_limit=0.25, p=0.5
                 ),
-                A.GaussNoise(var_limit=(5.0, 25.0), p=0.3),
+                A.GaussNoise(std_range=(0.02, 0.1), p=0.3),
             ])
         else:
             transform = A.Compose([A.Resize(512, 512)])
@@ -319,10 +314,11 @@ class QwenArcadeDataset(ArcadeDataset):
         from PIL import Image as PILImage
         pil_img = PILImage.fromarray(img_aug)
 
-        proc_out = self.processor(
-            images      = [pil_img],
+        proc_out = self.processor.image_processor(
+            images         = [pil_img],
             return_tensors = "pt",
         )
+
 
         return {
             "pixel_values":   proc_out["pixel_values"].squeeze(0),
@@ -460,12 +456,17 @@ def main(args: argparse.Namespace) -> None:
         print("Encoder frozen — only decoder will train.")
 
     # ── Decoder ───────────────────────────────────────────────
-    # Qwen3-VL-8B vision encoder hidden dim = 1152
-    decoder = SegDecoder(in_channels=1152, out_size=512).to(device)
-    n_dec   = sum(p.numel() for p in decoder.parameters()) / 1e6
-    print(f"Decoder parameters: {n_dec:.2f}M")
+    llm_hidden = encoder.config.hidden_size
+    merge_sz   = getattr(encoder.config.vision_config,
+                         "spatial_merge_size", 2)
+    print(f"Vision output dim   : {llm_hidden}")
+    print(f"Spatial merge size  : {merge_sz}")
 
-    model = QwenSegmenter(encoder, decoder)
+    decoder = SegDecoder(in_channels=llm_hidden, out_size=512).to(device)
+    n_dec   = sum(p.numel() for p in decoder.parameters()) / 1e6
+    print(f"Decoder parameters  : {n_dec:.2f}M")
+
+    model = QwenSegmenter(encoder, decoder, merge_size=merge_sz)
 
     # ── Data ──────────────────────────────────────────────────
     print("\nLoading datasets...")
@@ -499,7 +500,8 @@ def main(args: argparse.Namespace) -> None:
     criterion = BCEDiceLoss()
 
     # Mixed precision scaler (bfloat16 on Ampere GPUs)
-    scaler = torch.cuda.amp.GradScaler(enabled=True)
+    scaler = torch.amp.GradScaler("cuda", enabled=True)
+
 
     # ── Training loop ─────────────────────────────────────────
     best_val_dice = 0.0
