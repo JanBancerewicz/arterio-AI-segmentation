@@ -331,9 +331,9 @@ class QwenArcadeDataset(ArcadeDataset):
 def qwen_collate_fn(batch: list[dict]) -> dict:
     """Custom collate: pixel_values may have different lengths due to tiling."""
     return {
-        "pixel_values":   torch.stack([b["pixel_values"]   for b in batch]),
-        "image_grid_thw": torch.stack([b["image_grid_thw"] for b in batch]),
-        "mask":           torch.stack([b["mask"]            for b in batch]),
+        "pixel_values":   torch.cat([b["pixel_values"]   for b in batch]),
+        "image_grid_thw": torch.cat([b["image_grid_thw"] for b in batch]),
+        "mask":           torch.cat([b["mask"]            for b in batch]),
         "stem":           [b["stem"] for b in batch],
     }
 
