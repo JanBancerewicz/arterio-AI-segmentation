@@ -1,0 +1,18 @@
+{
+  "n_images": 300,
+  "threshold": 0.5,
+  "qwen_only": {
+    "dice": 0.7585,
+    "iou": 0.6218,
+    "precision": 0.8346,
+    "recall": 0.713,
+    "px_acc": 0.9842
+  },
+  "qwen_unet": {
+    "dice": 0.7952,
+    "iou": 0.6713,
+    "precision": 0.8525,
+    "recall": 0.7631,
+    "px_acc": 0.9863
+  }
+}
