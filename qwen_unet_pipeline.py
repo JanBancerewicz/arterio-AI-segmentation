@@ -1,49 +1,36 @@
 """
-train_qwen_unet.py  —  Qwen3-VL (frozen) → U-Net refinement pipeline
-======================================================================
+train_qwen_unet.py  v4  —  Qwen3-VL (frozen) → U-Net refinement pipeline
+=========================================================================
 Coronary vessel segmentation on ARCADE syntax dataset.
 
-IDEA:
-    Qwen3-VL (twój wytrenowany checkpoint: qwen_seg_best_LoRA_deepstack.pth)
-    produkuje wstępną maskę. U-Net dostaje CONCAT oryginalnego obrazu i tej
-    maski (2 kanały wejścia) i uczy się ją poprawiać.
+NAPRAWIONE względem v3:
+  - [GŁÓWNY PROBLEM] U-Net uczył się ścieńczać maskę Qwena → przerwy w naczyniach
+    Przyczyna: GT (cienkie linie) vs wejście Qwena (grube obszary) = mismatch stylu
 
-    XCA obraz (512×512)
-          │
-          ├──────────────────────────────────────────┐
-          │                                          │
-    Qwen3-VL (zamrożony, twój ckpt)           oryginalny obraz
-          │                                    (normalizowany)
-    maska wstępna (sigmoid → float)                  │
-          │                                          │
-          └──────────── concat ──────────────────────┘
-                            │
-                     (B, 2, 512, 512)
-                            │
-                   U-Net ResNet-34 encoder
-                   (wagi ImageNet na kanale 1,
-                    kanal 2 = maska Qwena)
-                            │
-                   finalna maska (B, 1, 512, 512)
-                            │
-                   loss vs ground truth
+  ZMIANY v4:
+  1. CURRICULUM TARGET: przez pierwsze N epok target = dilatowana GT (styl Qwena),
+     potem stopniowo zmniejsza kernel → GT (cienkie linie). U-Net uczy się najpierw
+     "refinować kształt" a dopiero potem "ścieńczać" – bez utraty ciągłości.
+
+  2. CONNECTIVITY LOSS: dodatkowy term który karze za przerwy w ciągłości.
+     Używa gradientu morfologicznego maski predykcji – nieciągłości = duży gradient.
+
+  3. SOFT MASKA QWENA podczas treningu: zamiast binarnej 0/1 podajemy sigmoid
+     Qwena clampowany do [0.15, 1.0] – U-Net widzi pewność Qwena, słabe naczynia
+     nie znikają z sygnału wejściowego.
+
+  4. QWEN-GUIDED LOSS: dodatkowy term BCE który karze gdy U-Net usuwa to co Qwen
+     był pewny (prob > 0.7) – zapobiega "kasowaniu" ciągłych naczyń.
 
 UŻYCIE:
-    # Podstawowe — tylko U-Net refinement, Qwen zamrożony
-    python train_qwen_unet.py \
+    python train_qwen_unet_v4.py \
         --qwen-ckpt checkpoints/qwen_seg_best_LoRA_deepstack.pth \
-        --epochs 50 --batch-size 4
+        --epochs 50 --batch-size 2
 
-    # Z LoRA w Qwenie (fine-tune Qwena razem z U-Netem, bardzo mało lr)
-    python train_qwen_unet.py \
+    # Większy encoder
+    python train_qwen_unet_v4.py \
         --qwen-ckpt checkpoints/qwen_seg_best_LoRA_deepstack.pth \
-        --finetune-qwen --epochs 30 --batch-size 2
-
-WYNIKI DO TABELI W PRACY:
-    Row 1: U-Net baseline                 test Dice ~0.7955
-    Row 2: Qwen3-VL frozen + DeepStack    (twój wynik)
-    Row 3: Qwen3-VL LoRA  + DeepStack     (twój wynik)
-    Row 4: Qwen + U-Net refinement        ← TEN SKRYPT
+        --encoder efficientnet-b4 --epochs 50 --batch-size 2
 """
 
 import argparse
@@ -57,34 +44,28 @@ import numpy as np
 import segmentation_models_pytorch as smp
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from albumentations.pytorch import ToTensorV2
 from PIL import Image as PILImage
 from peft import LoraConfig, get_peft_model
+from torch.optim.swa_utils import AveragedModel, get_ema_multi_avg_fn
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 from transformers import AutoProcessor, Qwen3VLForConditionalGeneration
 
 # ── Stałe ─────────────────────────────────────────────────────────────────────
-MODEL_ID   = "Qwen/Qwen3-VL-8B-Instruct"
-IMG_SIZE   = 512
-DEC_DEVICE = "cuda:0"
-
+MODEL_ID      = "Qwen/Qwen3-VL-8B-Instruct"
+IMG_SIZE      = 512
+DEC_DEVICE    = "cuda:0"
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD  = (0.229, 0.224, 0.225)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Qwen wrapper  —  produkuje maskę wstępną, zamrożony podczas treningu U-Neta
+# Qwen wrapper (bez zmian)
 # ══════════════════════════════════════════════════════════════════════════════
 
 class QwenMaskPredictor(nn.Module):
-    """
-    Ładuje wytrenowanego Qwena (SegDecoder + opcjonalnie LoRA + DeepStackFusion)
-    i produkuje binarną maskę prawdopodobieństwa (sigmoid, nie thresholded).
-
-    Zawsze zamrożony podczas treningu U-Neta (chyba że --finetune-qwen).
-    """
-
     def __init__(self, vl_model, decoder, fusion=None,
                  spatial_merge: int = 2, patch_size: int = 16,
                  img_size: int = 512):
@@ -92,7 +73,7 @@ class QwenMaskPredictor(nn.Module):
         self.vl_model = vl_model
         self.decoder  = decoder
         self.fusion   = fusion
-        self.grid     = img_size // patch_size // spatial_merge  # = 16
+        self.grid     = img_size // patch_size // spatial_merge
 
     @property
     def visual(self):
@@ -101,12 +82,9 @@ class QwenMaskPredictor(nn.Module):
             m = m.base_model.model
         return m.visual
 
-    def forward(self, pixel_values: torch.Tensor,
-                image_grid_thw: torch.Tensor) -> torch.Tensor:
-        """Zwraca prawdopodobieństwo (0-1), shape (B, 1, 512, 512)."""
+    def forward(self, pixel_values, image_grid_thw):
         B    = image_grid_thw.shape[0]
         grid = self.grid
-
         last_hidden, deepstack = self.visual(
             hidden_states=pixel_values,
             grid_thw=image_grid_thw,
@@ -120,7 +98,6 @@ class QwenMaskPredictor(nn.Module):
                      .to(DEC_DEVICE))
 
         last_spatial = to_spatial(last_hidden)
-
         if self.fusion is not None:
             ds_spatial = [to_spatial(ds) for ds in deepstack]
             fused = self.fusion([last_spatial, *ds_spatial])
@@ -128,12 +105,11 @@ class QwenMaskPredictor(nn.Module):
             fused = last_spatial
 
         logits = self.decoder(fused.float())
-        return torch.sigmoid(logits)   # (B, 1, 512, 512)  wartości 0-1
+        return torch.sigmoid(logits)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SegDecoder + DeepStackFusion  —  skopiowane z train_qwen_seg_1.py
-# (musimy zrekonstruować architekturę żeby załadować wagi)
+# SegDecoder + DeepStackFusion (bez zmian)
 # ══════════════════════════════════════════════════════════════════════════════
 
 class SegDecoder(nn.Module):
@@ -182,14 +158,44 @@ class DeepStackFusion(nn.Module):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Ładowanie checkpointu Qwena
+# Curriculum dilation — kluczowa zmiana v4
+# ══════════════════════════════════════════════════════════════════════════════
+
+def get_dilation_kernel_size(epoch: int, total_epochs: int,
+                              max_dil: int = 9, min_dil: int = 1) -> int:
+    """
+    Curriculum learning dla targetu:
+    - Epoka 1:              kernel = max_dil (np. 9) → target podobny do maski Qwena
+    - Epoka total_epochs:   kernel = min_dil (1) → target = GT (cienkie linie)
+
+    Stopniowe ścieńczanie uczy U-Neta refinować bez przerywania ciągłości.
+    kernel musi być nieparzysty.
+    """
+    progress = (epoch - 1) / max(total_epochs - 1, 1)   # 0.0 → 1.0
+    size     = max_dil - progress * (max_dil - min_dil)
+    size     = int(round(size))
+    if size % 2 == 0:
+        size += 1
+    return max(size, 1)
+
+
+def dilate_mask(mask_bin: np.ndarray, kernel_size: int) -> np.ndarray:
+    """
+    Dylatuje binarną maskę (float32, 0/1) z eliptycznym kernelem.
+    kernel_size=1 → brak dylatacji (GT jak jest).
+    """
+    if kernel_size <= 1:
+        return mask_bin
+    k   = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernel_size, kernel_size))
+    out = cv2.dilate(mask_bin.astype(np.uint8), k, iterations=1)
+    return out.astype(np.float32)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Ładowanie checkpointu Qwena (bez zmian)
 # ══════════════════════════════════════════════════════════════════════════════
 
 def load_qwen_predictor(ckpt_path: str, finetune: bool = False) -> QwenMaskPredictor:
-    """
-    Ładuje Qwen3-VL + SegDecoder + DeepStackFusion z checkpointu.
-    Jeśli checkpoint zawiera 'lora_state', aplikuje LoRA adaptery.
-    """
     print(f"\nŁadowanie Qwen3-VL z: {MODEL_ID}")
     vl_model = Qwen3VLForConditionalGeneration.from_pretrained(
         MODEL_ID,
@@ -205,34 +211,28 @@ def load_qwen_predictor(ckpt_path: str, finetune: bool = False) -> QwenMaskPredi
     use_deepstack = cfg.get("use_deepstack", True)
     use_lora      = cfg.get("use_lora", False) or ("lora_state" in ckpt)
 
-    vc = vl_model.config.vision_config
-
-    # Aplikuj LoRA jeśli checkpoint go zawiera
     if use_lora and "lora_state" in ckpt:
         print("  Aplikuję LoRA adaptery...")
         lora_r = cfg.get("lora_r") or 16
         lora_cfg = LoraConfig(
-            r=lora_r,
-            lora_alpha=lora_r * 2,
+            r=lora_r, lora_alpha=lora_r * 2,
             target_modules=["qkv", "linear_fc1", "linear_fc2"],
-            lora_dropout=0.05,
-            bias="none",
+            lora_dropout=0.05, bias="none",
         )
         vl_model = get_peft_model(vl_model, lora_cfg)
-        # Ładuj wagi adapterów
         from peft import set_peft_model_state_dict
         set_peft_model_state_dict(vl_model, ckpt["lora_state"])
         print("  LoRA wagi załadowane.")
 
-    # Decoder
-    decoder = SegDecoder(
-        in_channels=vc.out_hidden_size,
-        base_channels=512,
-    ).to(DEC_DEVICE)
+    base = vl_model
+    if hasattr(vl_model, "base_model") and hasattr(vl_model.base_model, "model"):
+        base = vl_model.base_model.model
+    vc = base.config.vision_config
+
+    decoder = SegDecoder(in_channels=vc.out_hidden_size, base_channels=512).to(DEC_DEVICE)
     decoder.load_state_dict(ckpt["decoder"])
     print(f"  Decoder załadowany. Params: {sum(p.numel() for p in decoder.parameters())/1e6:.2f}M")
 
-    # DeepStack fusion
     fusion = None
     if use_deepstack and ckpt.get("fusion") is not None:
         fusion = DeepStackFusion(n_sources=4).to(DEC_DEVICE)
@@ -240,22 +240,17 @@ def load_qwen_predictor(ckpt_path: str, finetune: bool = False) -> QwenMaskPredi
         print("  DeepStack fusion załadowany.")
 
     predictor = QwenMaskPredictor(
-        vl_model=vl_model,
-        decoder=decoder,
-        fusion=fusion,
-        spatial_merge=vc.spatial_merge_size,
-        patch_size=vc.patch_size,
+        vl_model=vl_model, decoder=decoder, fusion=fusion,
+        spatial_merge=vc.spatial_merge_size, patch_size=vc.patch_size,
         img_size=IMG_SIZE,
     )
 
-    # Zamroź Qwena (chyba że finetune)
     if not finetune:
         for p in predictor.parameters():
             p.requires_grad = False
         predictor.eval()
         print("  Qwen ZAMROŻONY — trenujemy tylko U-Net.")
     else:
-        # Zamroź backbone, odblokuj tylko LoRA + decoder
         for name, p in predictor.named_parameters():
             if "lora_" in name or "decoder" in name or "fusion" in name:
                 p.requires_grad = True
@@ -267,28 +262,22 @@ def load_qwen_predictor(ckpt_path: str, finetune: bool = False) -> QwenMaskPredi
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Dataset  —  zwraca obraz w DWÓCH formatach:
-#   1. dla Qwena  (pixel_values + image_grid_thw)
-#   2. dla U-Neta (znormalizowany tensor 3ch ImageNet)
+# Dataset — z curriculum dilation
 # ══════════════════════════════════════════════════════════════════════════════
 
 class HybridArcadeDataset(Dataset):
     """
-    Każdy __getitem__ zwraca:
-        pixel_values   — dla Qwena (jego własny preprocessor)
-        image_grid_thw — dla Qwena
-        image_unet     — (3, 512, 512) ImageNet-normalized tensor dla U-Neta
-        mask           — (1, 512, 512) binary ground truth
-        stem           — nazwa pliku
+    v4: Dataset przyjmuje `dilation_kernel` który jest aktualizowany przez
+    trening w każdej epoce. Pozwala na curriculum learning targetu.
     """
 
     def __init__(self, split: str, data_root: str, qwen_processor,
-                 img_size: int = 512):
-        self.processor = qwen_processor
-        self.img_size  = img_size
-        self.split     = split
+                 img_size: int = 512, dilation_kernel: int = 9):
+        self.processor       = qwen_processor
+        self.img_size        = img_size
+        self.split           = split
+        self.dilation_kernel = dilation_kernel   # ← aktualizowane co epokę
 
-        # Augmentacje geometryczne — aplikowane do obu wejść jednocześnie
         if split == "train":
             self.geo_aug = A.Compose([
                 A.Resize(img_size, img_size),
@@ -298,6 +287,7 @@ class HybridArcadeDataset(Dataset):
                 A.ShiftScaleRotate(shift_limit=0.05, scale_limit=0.1,
                                    rotate_limit=0, border_mode=0, p=0.4),
                 A.ElasticTransform(alpha=30, sigma=5, p=0.3),
+                A.GridDistortion(num_steps=5, distort_limit=0.2, p=0.3),
             ])
             self.photo_aug = A.Compose([
                 A.RandomBrightnessContrast(
@@ -305,12 +295,12 @@ class HybridArcadeDataset(Dataset):
                 A.RandomGamma(gamma_limit=(80, 120), p=0.3),
                 A.GaussNoise(var_limit=(5.0, 25.0), p=0.3),
                 A.GaussianBlur(blur_limit=(3, 5), p=0.2),
+                A.CLAHE(clip_limit=3.0, tile_grid_size=(8, 8), p=0.4),
             ])
         else:
             self.geo_aug   = A.Compose([A.Resize(img_size, img_size)])
             self.photo_aug = None
 
-        # Normalizacja ImageNet dla U-Neta
         self.unet_norm = A.Compose([
             A.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
             ToTensorV2(),
@@ -332,7 +322,7 @@ class HybridArcadeDataset(Dataset):
         ]
         if not self.pairs:
             raise RuntimeError(f"Brak par obraz-maska dla split={split}")
-        print(f"[{split}] {len(self.pairs)} par (tryb hybrydowy)")
+        print(f"[{split}] {len(self.pairs)} par")
 
     def __len__(self):
         return len(self.pairs)
@@ -340,78 +330,70 @@ class HybridArcadeDataset(Dataset):
     def __getitem__(self, idx):
         img_path, mask_path = self.pairs[idx]
 
-        gray = cv2.imread(str(img_path), cv2.IMREAD_GRAYSCALE)
-        mask = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)
-        rgb  = cv2.cvtColor(gray, cv2.COLOR_GRAY2RGB)
-        mask_bin = (mask > 127).astype(np.float32)
+        gray     = cv2.imread(str(img_path), cv2.IMREAD_GRAYSCALE)
+        mask     = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)
+        rgb      = cv2.cvtColor(gray, cv2.COLOR_GRAY2RGB)
+        mask_raw = (mask > 127).astype(np.float32)
 
-        # Geometryczna augmentacja (wspólna dla obrazu i maski)
-        aug      = self.geo_aug(image=rgb, mask=mask_bin)
+        aug      = self.geo_aug(image=rgb, mask=mask_raw)
         img_aug  = aug["image"]
         mask_aug = aug["mask"]
 
         if img_aug.dtype != np.uint8:
             img_aug = np.clip(img_aug, 0, 255).astype(np.uint8)
 
-        # Fotograficzna augmentacja (tylko obraz, nie maska)
         if self.photo_aug is not None:
             img_aug = self.photo_aug(image=img_aug)["image"]
             if img_aug.dtype != np.uint8:
                 img_aug = np.clip(img_aug, 0, 255).astype(np.uint8)
 
-        # Format dla Qwena (jego własny preprocessor)
+        # ── CURRICULUM: dilate target ──────────────────────────────────────
+        # mask_aug     = GT (cienkie linie) — do ewaluacji Dice (nie zmieniamy)
+        # mask_target  = dilatowana GT — jako target treningu U-Neta
+        mask_target = dilate_mask(mask_aug, self.dilation_kernel)
+
         pil  = PILImage.fromarray(img_aug)
         proc = self.processor.image_processor(images=[pil], return_tensors="pt")
 
-        # Format dla U-Neta (ImageNet normalizacja)
         unet_out   = self.unet_norm(image=img_aug, mask=mask_aug)
-        image_unet = unet_out["image"]  # (3, 512, 512)
+        image_unet = unet_out["image"]
 
         return {
-            "pixel_values":   proc["pixel_values"],       # (N_patches, patch_dim)
-            "image_grid_thw": proc["image_grid_thw"][0],  # (3,)
-            "image_unet":     image_unet,                  # (3, 512, 512)
-            "mask":           torch.from_numpy(mask_aug).unsqueeze(0),  # (1, 512, 512)
+            "pixel_values":   proc["pixel_values"],
+            "image_grid_thw": proc["image_grid_thw"][0],
+            "image_unet":     image_unet,
+            "mask":           torch.from_numpy(mask_aug).unsqueeze(0),     # GT do Dice
+            "mask_target":    torch.from_numpy(mask_target).unsqueeze(0),  # do loss
             "stem":           img_path.stem,
         }
 
 
 def hybrid_collate_fn(batch):
-    """Qwen wymaga concat patchy, reszta to standardowy stack."""
     return {
         "pixel_values":   torch.cat(  [b["pixel_values"]   for b in batch], dim=0),
         "image_grid_thw": torch.stack([b["image_grid_thw"] for b in batch], dim=0),
         "image_unet":     torch.stack([b["image_unet"]     for b in batch], dim=0),
         "mask":           torch.stack([b["mask"]            for b in batch], dim=0),
+        "mask_target":    torch.stack([b["mask_target"]     for b in batch], dim=0),
         "stem":           [b["stem"] for b in batch],
     }
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# U-Net refinement model
+# U-Net refinement model (bez zmian)
 # ══════════════════════════════════════════════════════════════════════════════
 
-def build_unet_refiner() -> nn.Module:
-    """
-    U-Net ResNet-34 z 4 kanałami wejścia:
-        kanał 0-2: oryginalny obraz XCA (ImageNet normalized)
-        kanał 3:   maska wstępna Qwena (0-1 float)
-
-    Strategia: budujemy model z in_channels=3 (żeby załadować wagi ImageNet),
-    potem ręcznie patchujemy pierwszą Conv2d na 4 kanały zachowując wagi RGB.
-    """
-    # Buduj z 3 kanałami żeby załadować wagi ImageNet
+def build_unet_refiner(encoder_name: str = "resnet34") -> nn.Module:
     model = smp.Unet(
-        encoder_name    = "resnet34",
-        encoder_weights = "imagenet",
-        in_channels     = 3,
-        classes         = 1,
-        activation      = None,
+        encoder_name           = encoder_name,
+        encoder_weights        = "imagenet",
+        in_channels            = 3,
+        classes                = 1,
+        activation             = None,
+        decoder_attention_type = "scse",
     )
 
-    # Znajdź pierwszą Conv2d w encoderze (niezależnie od nazwy warstwy w SMP)
-    first_conv = None
-    first_conv_name = None
+    first_conv = first_conv_name = None
     for name, m in model.encoder.named_modules():
         if isinstance(m, nn.Conv2d):
             first_conv      = m
@@ -419,63 +401,207 @@ def build_unet_refiner() -> nn.Module:
             break
 
     if first_conv is None:
-        raise RuntimeError("Nie znaleziono Conv2d w encoderze ResNet-34")
+        raise RuntimeError("Nie znaleziono Conv2d w encoderze")
 
-    print(f"  Patchuję pierwszą Conv2d: '{first_conv_name}'  "
-          f"shape={tuple(first_conv.weight.shape)}")
+    print(f"  Patchuję Conv2d: '{first_conv_name}'  shape={tuple(first_conv.weight.shape)}")
 
-    # Zachowaj wagi ImageNet dla kanałów RGB, dodaj kanał dla maski
-    old_weight = first_conv.weight.data.clone()          # (64, 3, 7, 7)
-    out_ch, in_ch, kH, kW = old_weight.shape
-    new_weight = torch.zeros(out_ch, in_ch + 1, kH, kW)
-    new_weight[:, :in_ch, :, :] = old_weight            # ImageNet RGB
-    nn.init.kaiming_normal_(                             # kanał maski Qwena
-        new_weight[:, in_ch:, :, :], mode="fan_out", nonlinearity="relu"
-    )
+    old_weight              = first_conv.weight.data.clone()
+    out_ch, in_ch, kH, kW  = old_weight.shape
+    new_weight              = torch.zeros(out_ch, in_ch + 1, kH, kW)
+    new_weight[:, :in_ch]  = old_weight
+    nn.init.kaiming_normal_(new_weight[:, in_ch:], mode="fan_out", nonlinearity="relu")
 
-    # Zamień Conv2d na nową z 4 kanałami wejścia
     new_conv = nn.Conv2d(
         in_ch + 1, out_ch,
-        kernel_size = first_conv.kernel_size,
-        stride      = first_conv.stride,
-        padding     = first_conv.padding,
-        bias        = first_conv.bias is not None,
+        kernel_size=first_conv.kernel_size,
+        stride=first_conv.stride,
+        padding=first_conv.padding,
+        bias=first_conv.bias is not None,
     )
     new_conv.weight.data = new_weight
 
-    # Wstaw nową Conv2d w odpowiednie miejsce (obsługa zagnieżdżonych modułów)
-    parts = first_conv_name.split(".")
+    parts  = first_conv_name.split(".")
     parent = model.encoder
     for part in parts[:-1]:
         parent = getattr(parent, part)
     setattr(parent, parts[-1], new_conv)
-
-    # Poinformuj SMP o nowej liczbie kanałów
     model.encoder._in_channels = 4
 
     n_params = sum(p.numel() for p in model.parameters()) / 1e6
-    print(f"U-Net refiner params: {n_params:.1f}M  (wejście: 4 kanały)")
+    print(f"U-Net ({encoder_name} + scSE): {n_params:.1f}M params  (4ch wejście)")
     return model
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Loss + metryki
+# Loss v4 — FocalTversky + Connectivity + QwenGuided
 # ══════════════════════════════════════════════════════════════════════════════
 
-class BCEDiceLoss(nn.Module):
-    def __init__(self, smooth: float = 1.0):
+class ConnectivityLoss(nn.Module):
+    """
+    Karze za przerwy w ciągłości naczyń.
+
+    Idea: jeśli predykcja ma "dziurę" (lokalnie niski sigmoid) w miejscu
+    gdzie Qwen był pewny (prob > qwen_thresh) → duża kara.
+
+    Implementacja: różnica między predykcją a jej dylatowaną wersją w
+    miejscach pewnej predykcji Qwena.
+    """
+
+    def __init__(self, kernel_size: int = 7, qwen_thresh: float = 0.6):
         super().__init__()
-        self.smooth = smooth
-        self.bce    = nn.BCEWithLogitsLoss()
+        self.qwen_thresh = qwen_thresh
+        # Morfologiczna dylatacja przez max-pooling (różniczkowa)
+        self.pool = nn.MaxPool2d(
+            kernel_size=kernel_size,
+            stride=1,
+            padding=kernel_size // 2,
+        )
 
-    def forward(self, logits, targets):
-        bce  = self.bce(logits, targets)
-        p    = torch.sigmoid(logits).view(-1)
-        t    = targets.view(-1)
-        dice = 1.0 - (2.0 * (p * t).sum() + self.smooth) / (
-            p.sum() + t.sum() + self.smooth)
-        return 0.5 * bce + 0.5 * dice
+    def forward(self, logits: torch.Tensor,
+                qwen_prob: torch.Tensor) -> torch.Tensor:
+        pred = torch.sigmoid(logits)
 
+        # Maska pewnych naczyń Qwena
+        qwen_certain = (qwen_prob > self.qwen_thresh).float()
+
+        # Dylatowana predykcja (lokalne maksimum)
+        pred_dilated = self.pool(pred)
+
+        # Przerwa = miejsce gdzie lokalnie jest wysoka wartość (sąsiedztwo)
+        # ale w danym pikselu nie ma (pred mała), a Qwen był pewny
+        gap = (pred_dilated - pred).clamp(0) * qwen_certain
+
+        return gap.mean()
+
+
+class QwenGuidedLoss(nn.Module):
+    """
+    Karze U-Net za usuwanie pikseli które Qwen wykrył pewnie.
+
+    Jeśli Qwen_prob > high_thresh → U-Net powinien też to wykryć.
+    Jeśli Qwen_prob < low_thresh  → U-Net może robić co chce (Qwen się mylił).
+
+    To jest "leash" który trzyma U-Net blisko maski Qwena dla pewnych naczyń.
+    """
+
+    def __init__(self, high_thresh: float = 0.75, low_thresh: float = 0.3):
+        super().__init__()
+        self.high_thresh = high_thresh
+        self.low_thresh  = low_thresh
+
+    def forward(self, logits: torch.Tensor,
+                qwen_prob: torch.Tensor) -> torch.Tensor:
+        # Gdzie Qwen był pewny że jest naczynie
+        qwen_high = (qwen_prob > self.high_thresh).float()
+
+        # Kara gdy U-Net nie wykrywa tego co Qwen widział z dużą pewnością.
+        # Używamy binary_cross_entropy_with_logits (bezpieczne z autocast)
+        # z target=ones → maksymalizuj predykcję tam gdzie Qwen był pewny
+        loss = F.binary_cross_entropy_with_logits(
+            logits,
+            torch.ones_like(logits),
+            reduction="none",
+        ) * qwen_high
+
+        return loss.mean()
+
+
+class FocalTverskyLoss(nn.Module):
+    def __init__(self, alpha: float = 0.7, gamma: float = 2.0,
+                 smooth: float = 1.0, focal_weight: float = 0.4,
+                 pos_weight: float = 20.0):
+        super().__init__()
+        self.alpha        = alpha
+        self.gamma        = gamma
+        self.smooth       = smooth
+        self.focal_weight = focal_weight
+        self.register_buffer("pw", torch.tensor([pos_weight]))
+
+    def forward(self, logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+        p = torch.sigmoid(logits)
+
+        bce_raw = F.binary_cross_entropy_with_logits(
+            logits, targets,
+            pos_weight=self.pw.to(logits.device),
+            reduction="none",
+        )
+        p_t   = p * targets + (1 - p) * (1 - targets)
+        focal = ((1 - p_t) ** self.gamma * bce_raw).mean()
+
+        pf = p.view(-1);  tf = targets.view(-1)
+        tp = (pf * tf).sum()
+        fp = (pf * (1 - tf)).sum()
+        fn = ((1 - pf) * tf).sum()
+        tversky = 1.0 - (tp + self.smooth) / (
+            tp + (1 - self.alpha) * fp + self.alpha * fn + self.smooth
+        )
+
+        return self.focal_weight * focal + (1 - self.focal_weight) * tversky
+
+
+class CombinedLossV4(nn.Module):
+    """
+    Łączny loss v4:
+
+      L = w_main * FocalTversky(pred, dilated_GT)
+        + w_conn * ConnectivityLoss(pred, qwen_prob)
+        + w_qwen * QwenGuidedLoss(pred, qwen_prob)
+
+    Wagi:
+      w_conn: rośnie od 0 do conn_max w pierwszych warmup_conn epokach.
+              Na początku U-Net uczy się podstawowego kształtu,
+              potem connectivity zaczyna wymuszać ciągłość.
+      w_qwen: stały — zawsze trzyma U-Net blisko pewnych naczyń Qwena.
+    """
+
+    def __init__(self, pos_weight: float = 20.0,
+                 conn_max: float = 0.3, qwen_w: float = 0.2,
+                 warmup_conn: int = 5):
+        super().__init__()
+        self.focal_tversky  = FocalTverskyLoss(pos_weight=pos_weight)
+        self.connectivity   = ConnectivityLoss(kernel_size=7, qwen_thresh=0.6)
+        self.qwen_guided    = QwenGuidedLoss(high_thresh=0.75, low_thresh=0.3)
+        self.conn_max       = conn_max
+        self.qwen_w         = qwen_w
+        self.warmup_conn    = warmup_conn
+        self.current_epoch  = 1
+
+    def set_epoch(self, epoch: int):
+        self.current_epoch = epoch
+
+    def get_conn_weight(self) -> float:
+        """Connectivity loss rośnie stopniowo przez pierwsze warmup_conn epok."""
+        progress = min(self.current_epoch / self.warmup_conn, 1.0)
+        return self.conn_max * progress
+
+    def forward(self, logits: torch.Tensor, targets: torch.Tensor,
+                qwen_prob: torch.Tensor) -> tuple[torch.Tensor, dict]:
+        """
+        Args:
+            logits:    (B, 1, H, W) — surowe logity U-Neta
+            targets:   (B, 1, H, W) — DILATOWANA GT (curriculum target)
+            qwen_prob: (B, 1, H, W) — sigmoid Qwena (ciągły, nie binarny)
+        """
+        main_loss = self.focal_tversky(logits, targets)
+        conn_loss = self.connectivity(logits, qwen_prob)
+        qwen_loss = self.qwen_guided(logits, qwen_prob)
+
+        w_conn = self.get_conn_weight()
+        w_main = 1.0 - w_conn * 0.3    # lekko zmniejszamy main gdy conn rośnie
+
+        total = w_main * main_loss + w_conn * conn_loss + self.qwen_w * qwen_loss
+
+        return total, {
+            "loss_main": main_loss.item(),
+            "loss_conn": conn_loss.item(),
+            "loss_qwen": qwen_loss.item(),
+            "w_conn":    w_conn,
+        }
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Metryki (bez zmian)
+# ══════════════════════════════════════════════════════════════════════════════
 
 def compute_metrics(preds_bin, targets, smooth=1e-6):
     p  = preds_bin.float().view(-1)
@@ -485,7 +611,7 @@ def compute_metrics(preds_bin, targets, smooth=1e-6):
     fn = ((1 - p) * t).sum()
     tn = ((1 - p) * (1 - t)).sum()
     return {
-        "dice":      ((2 * tp + smooth) / (2 * tp + fp + fn + smooth)).item(),
+        "dice":      ((2*tp + smooth) / (2*tp + fp + fn + smooth)).item(),
         "iou":       ((tp + smooth) / (tp + fp + fn + smooth)).item(),
         "px_acc":    ((tp + tn) / (tp + tn + fp + fn + smooth)).item(),
         "precision": ((tp + smooth) / (tp + fp + smooth)).item(),
@@ -494,59 +620,134 @@ def compute_metrics(preds_bin, targets, smooth=1e-6):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Train / eval loops
+# Early stopping (bez zmian)
 # ══════════════════════════════════════════════════════════════════════════════
 
-def train_epoch(qwen, unet, loader, optimizer, criterion, device):
-    unet.train()
-    # Qwen: eval jeśli zamrożony, train jeśli finetune
-    if any(p.requires_grad for p in qwen.parameters()):
-        qwen.train()
+class EarlyStopping:
+    def __init__(self, patience: int = 10, min_delta: float = 1e-4):
+        self.patience  = patience
+        self.min_delta = min_delta
+        self.counter   = 0
+        self.best      = 0.0
+
+    def __call__(self, val_dice: float) -> bool:
+        if val_dice > self.best + self.min_delta:
+            self.best    = val_dice
+            self.counter = 0
+        else:
+            self.counter += 1
+        return self.counter >= self.patience
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TTA — używa SOFT maski Qwena (zmiana v4)
+# ══════════════════════════════════════════════════════════════════════════════
+
+@torch.no_grad()
+def predict_with_tta(qwen, unet, pv, thw, img_un, device, use_tta: bool = True,
+                     soft_qwen: bool = False):
+    """
+    v4: soft_qwen=True podczas treningu → U-Net widzi pewność Qwena.
+        soft_qwen=False podczas inferencji → binarna maska (jak v3).
+
+    Soft maska: sigmoid Qwena clampowany do [0.15, 1.0].
+    Minimalny clamp 0.15 zapewnia że słabe naczynia nie giną całkowicie.
+    """
+    with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
+        qwen_prob = qwen(pv, thw).to(device).float()
+
+    if soft_qwen:
+        # Soft: zachowaj gradient pewności, minimalny sygnał = 0.15
+        qwen_mask = qwen_prob.clamp(0.15, 1.0)
     else:
-        qwen.eval()
+        # Binarna: jak v3 (do inferencji)
+        qwen_mask = (qwen_prob > 0.5).float()
+
+    if not use_tta:
+        with torch.autocast(device_type="cuda", dtype=torch.float16):
+            logit = unet(torch.cat([img_un, qwen_mask], dim=1))
+        return torch.sigmoid(logit), qwen_prob
+
+    preds = []
+    for flip_h, flip_v in [(False, False), (True, False), (False, True), (True, True)]:
+        img = img_un.clone()
+        qm  = qwen_mask.clone()
+        if flip_h:
+            img = torch.flip(img, dims=[3])
+            qm  = torch.flip(qm,  dims=[3])
+        if flip_v:
+            img = torch.flip(img, dims=[2])
+            qm  = torch.flip(qm,  dims=[2])
+        with torch.autocast(device_type="cuda", dtype=torch.float16):
+            logit = unet(torch.cat([img, qm], dim=1))
+        pred = torch.sigmoid(logit)
+        if flip_h: pred = torch.flip(pred, dims=[3])
+        if flip_v: pred = torch.flip(pred, dims=[2])
+        preds.append(pred)
+
+    return torch.stack(preds).mean(0), qwen_prob
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Train / eval loops — v4
+# ══════════════════════════════════════════════════════════════════════════════
+
+def train_epoch(qwen, unet, loader, optimizer, criterion, device, scaler):
+    unet.train()
+    qwen.eval()
 
     total_loss = 0.0
-    totals = {k: 0.0 for k in ("dice", "iou", "px_acc", "precision", "recall")}
+    loss_parts = {"loss_main": 0.0, "loss_conn": 0.0, "loss_qwen": 0.0}
+    totals     = {k: 0.0 for k in ("dice", "iou", "px_acc", "precision", "recall")}
 
     for batch in tqdm(loader, desc="  train", leave=False):
         pv      = batch["pixel_values"].to(DEC_DEVICE, dtype=torch.bfloat16)
         thw     = batch["image_grid_thw"].to(DEC_DEVICE)
         img_un  = batch["image_unet"].to(device)
-        tgt     = batch["mask"].to(device)
+        tgt_gt  = batch["mask"].to(device)         # GT — do Dice
+        tgt_dil = batch["mask_target"].to(device)  # dilatowana GT — do loss
 
-        # Krok 1: Qwen → maska wstępna
-        with torch.no_grad() if not any(p.requires_grad for p in qwen.parameters()) \
-                else torch.enable_grad():
+        # Qwen → soft maska (clamp 0.15) zamiast binarnej
+        with torch.no_grad():
             with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
-                qwen_mask = qwen(pv, thw)  # (B, 1, 512, 512)  wartości 0-1
-        qwen_mask = qwen_mask.to(device).float().detach() \
-            if not any(p.requires_grad for p in qwen.parameters()) \
-            else qwen_mask.to(device).float()
+                qwen_prob = qwen(pv, thw).to(device).float()
 
-        # Krok 2: U-Net → finalna maska
-        unet_input = torch.cat([img_un, qwen_mask], dim=1)  # (B, 4, 512, 512)
+        # ZMIANA v4: soft maska — U-Net widzi pewność Qwena
+        qwen_soft = qwen_prob.clamp(0.15, 1.0).detach()
+        unet_input = torch.cat([img_un, qwen_soft], dim=1)
 
         optimizer.zero_grad()
-        logits = unet(unet_input)
-        loss   = criterion(logits, tgt)
-        loss.backward()
+        with torch.autocast(device_type="cuda", dtype=torch.float16):
+            logits = unet(unet_input)
+            # ZMIANA v4: target = dilatowana GT, przekazujemy też qwen_prob
+            loss, parts = criterion(logits, tgt_dil, qwen_prob.detach())
+
+        scaler.scale(loss).backward()
+        scaler.unscale_(optimizer)
         torch.nn.utils.clip_grad_norm_(unet.parameters(), max_norm=1.0)
-        optimizer.step()
+        scaler.step(optimizer)
+        scaler.update()
 
         total_loss += loss.item()
+        for k in loss_parts:
+            loss_parts[k] += parts.get(k, 0.0)
+
+        # Dice liczymy względem oryginalnego GT (nie dilatowanego)
         with torch.no_grad():
             preds_bin = (torch.sigmoid(logits) > 0.5).long()
-            for k, v in compute_metrics(preds_bin, tgt).items():
+            for k, v in compute_metrics(preds_bin, tgt_gt).items():
                 totals[k] += v
 
     n = len(loader)
-    return {"loss": total_loss / n, **{k: v / n for k, v in totals.items()}}
+    result = {"loss": total_loss / n, **{k: v / n for k, v in totals.items()}}
+    result.update({k: v / n for k, v in loss_parts.items()})
+    return result
 
 
 @torch.no_grad()
-def eval_epoch(qwen, unet, loader, criterion, device):
-    unet.eval()
-    qwen.eval()
+def eval_epoch(qwen, unet, loader, criterion, device,
+               threshold: float = 0.5, use_tta: bool = False):
+    unet.eval(); qwen.eval()
 
     total_loss = 0.0
     totals = {k: 0.0 for k in ("dice", "iou", "px_acc", "precision", "recall")}
@@ -556,16 +757,24 @@ def eval_epoch(qwen, unet, loader, criterion, device):
         thw     = batch["image_grid_thw"].to(DEC_DEVICE)
         img_un  = batch["image_unet"].to(device)
         tgt     = batch["mask"].to(device)
+        tgt_dil = batch["mask_target"].to(device)
 
-        with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
-            qwen_mask = qwen(pv, thw)
-        qwen_mask = qwen_mask.to(device).float()
+        if use_tta:
+            prob, qwen_prob = predict_with_tta(
+                qwen, unet, pv, thw, img_un, device, use_tta=True, soft_qwen=False)
+            logits    = torch.log(prob.clamp(1e-6, 1-1e-6) / (1 - prob.clamp(1e-6, 1-1e-6)))
+            preds_bin = (prob > threshold).long()
+        else:
+            with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
+                qwen_prob = qwen(pv, thw).to(device).float()
+            qwen_soft  = qwen_prob.clamp(0.15, 1.0)
+            unet_input = torch.cat([img_un, qwen_soft], dim=1)
+            with torch.autocast(device_type="cuda", dtype=torch.float16):
+                logits = unet(unet_input)
+            preds_bin  = (torch.sigmoid(logits) > threshold).long()
 
-        unet_input = torch.cat([img_un, qwen_mask], dim=1)
-        logits     = unet(unet_input)
-        total_loss += criterion(logits, tgt).item()
-
-        preds_bin = (torch.sigmoid(logits) > 0.5).long()
+        loss, _ = criterion(logits, tgt_dil, qwen_prob)
+        total_loss += loss.item()
         for k, v in compute_metrics(preds_bin, tgt).items():
             totals[k] += v
 
@@ -574,20 +783,53 @@ def eval_epoch(qwen, unet, loader, criterion, device):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Zapis przykładowych predykcji (do pracy)
+# Optymalizacja progu (bez zmian)
 # ══════════════════════════════════════════════════════════════════════════════
 
 @torch.no_grad()
-def save_predictions(qwen, unet, loader, device, out_dir: Path, n: int = 12):
-    """
-    Zapisuje panele: XCA | maska Qwena | maska U-Net | ground truth
-    Bezpośrednio do rozdziału wynikowego pracy.
-    """
+def find_best_threshold(qwen, unet, val_loader, device, thresholds=None) -> float:
+    if thresholds is None:
+        thresholds = np.arange(0.25, 0.75, 0.025)
+
+    unet.eval(); qwen.eval()
+    all_probs, all_targets = [], []
+
+    for batch in tqdm(val_loader, desc="  threshold search", leave=False):
+        pv     = batch["pixel_values"].to(DEC_DEVICE, dtype=torch.bfloat16)
+        thw    = batch["image_grid_thw"].to(DEC_DEVICE)
+        img_un = batch["image_unet"].to(device)
+        tgt    = batch["mask"]
+
+        prob, _ = predict_with_tta(
+            qwen, unet, pv, thw, img_un, device, use_tta=False, soft_qwen=False)
+        all_probs.append(prob.cpu())
+        all_targets.append(tgt)
+
+    probs   = torch.cat(all_probs)
+    targets = torch.cat(all_targets)
+
+    best_t, best_dice = 0.5, 0.0
+    for t in thresholds:
+        d = compute_metrics((probs > t).long(), targets.long())["dice"]
+        if d > best_dice:
+            best_dice, best_t = d, float(t)
+
+    print(f"  Optymalny próg: {best_t:.3f}  (val Dice: {best_dice:.4f})")
+    return best_t
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Zapis predykcji (bez zmian istotnych)
+# ══════════════════════════════════════════════════════════════════════════════
+
+@torch.no_grad()
+def save_predictions(qwen, unet, loader, device, out_dir: Path,
+                     threshold: float = 0.5, n: int = 12):
     out_dir.mkdir(parents=True, exist_ok=True)
     unet.eval(); qwen.eval()
 
-    mean = np.array(IMAGENET_MEAN)
-    std  = np.array(IMAGENET_STD)
+    mean  = np.array(IMAGENET_MEAN)
+    std   = np.array(IMAGENET_STD)
     saved = 0
 
     for batch in loader:
@@ -600,215 +842,273 @@ def save_predictions(qwen, unet, loader, device, out_dir: Path, n: int = 12):
         tgt    = batch["mask"]
         stems  = batch["stem"]
 
-        with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
-            qwen_mask = qwen(pv, thw)
-        qwen_mask = qwen_mask.to(device).float()
-
-        unet_input = torch.cat([img_un, qwen_mask], dim=1)
-        logits     = unet(unet_input)
-        preds_bin  = (torch.sigmoid(logits) > 0.5).cpu().numpy()
-        qwen_np    = (qwen_mask > 0.5).cpu().numpy()
+        prob, qwen_prob = predict_with_tta(
+            qwen, unet, pv, thw, img_un, device, use_tta=True, soft_qwen=False)
+        preds_bin = (prob > threshold).cpu().numpy()
+        qwen_np   = (qwen_prob > 0.5).cpu().numpy()
 
         for i in range(len(stems)):
             if saved >= n:
                 break
 
-            img_np = img_un[i].cpu().numpy().transpose(1, 2, 0)
-            img_np = ((img_np * std + mean) * 255).clip(0, 255).astype(np.uint8)
+            img_np   = img_un[i].cpu().numpy().transpose(1, 2, 0)
+            img_np   = ((img_np * std + mean) * 255).clip(0, 255).astype(np.uint8)
             img_gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
 
-            gt_mask    = (tgt[i, 0].numpy() * 255).astype(np.uint8)
-            qwen_vis   = (qwen_np[i, 0] * 255).astype(np.uint8)
-            unet_vis   = (preds_bin[i, 0] * 255).astype(np.uint8)
+            gt_np = tgt[i, 0].numpy().astype(bool)
+            pr_np = preds_bin[i, 0].astype(bool)
+            qw_np = qwen_np[i, 0].astype(bool)
 
-            panel = np.hstack([img_gray, qwen_vis, unet_vis, gt_mask])
+            gt_vis = (gt_np * 255).astype(np.uint8)
+            pr_vis = (pr_np * 255).astype(np.uint8)
+            qw_vis = (qw_np * 255).astype(np.uint8)
 
-            # Nagłówki
-            h = panel.shape[0]
-            labeled = np.zeros((h + 20, panel.shape[1]), dtype=np.uint8)
-            labeled[20:, :] = panel
-            for j, label in enumerate(["XCA", "Qwen", "Unet+Qwen", "GT"]):
-                cv2.putText(labeled, label,
-                            (j * IMG_SIZE + 5, 15),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, 200, 1)
+            overlay = cv2.cvtColor(img_gray, cv2.COLOR_GRAY2BGR)
+            overlay[pr_np &  gt_np] = (0,   200,   0)
+            overlay[pr_np & ~gt_np] = (0,   0,   200)
+            overlay[~pr_np & gt_np] = (200, 0,     0)
+            overlay = cv2.addWeighted(
+                cv2.cvtColor(img_gray, cv2.COLOR_GRAY2BGR), 0.45,
+                overlay, 0.55, 0)
 
-            dice = compute_metrics(
+            header_h = 22
+            cols   = [img_gray, qw_vis, pr_vis, gt_vis,
+                      cv2.cvtColor(overlay, cv2.COLOR_BGR2GRAY)]
+            labels = ["XCA", "Qwen", "Unet+Qwen", "GT", "Overlay"]
+
+            panels = []
+            for col, lbl in zip(cols, labels):
+                hdr = np.zeros((header_h, IMG_SIZE), dtype=np.uint8)
+                cv2.putText(hdr, lbl, (4, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, 200, 1)
+                panels.append(np.vstack([hdr, col]))
+
+            panel   = np.hstack(panels)
+            metrics = compute_metrics(
                 torch.from_numpy(preds_bin[i:i+1]),
                 tgt[i:i+1].long(),
-            )["dice"]
-
-            cv2.imwrite(str(out_dir / f"{stems[i]}_dice{dice:.3f}.png"), labeled)
+            )
+            fname = f"{stems[i]}_dice{metrics['dice']:.3f}_rec{metrics['recall']:.3f}.png"
+            cv2.imwrite(str(out_dir / fname), panel)
             saved += 1
 
     print(f"  Zapisano {saved} paneli → {out_dir}/")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Main
+# Main — v4 z curriculum
 # ══════════════════════════════════════════════════════════════════════════════
 
 def main(args):
     print(f"\nCUDA: {torch.cuda.is_available()}")
     if torch.cuda.is_available():
         for i in range(torch.cuda.device_count()):
-            n = torch.cuda.get_device_name(i)
-            v = torch.cuda.get_device_properties(i).total_memory / 1e9
-            print(f"  GPU {i}: {n}  ({v:.1f} GB)")
+            name = torch.cuda.get_device_name(i)
+            vram = torch.cuda.get_device_properties(i).total_memory / 1e9
+            print(f"  GPU {i}: {name}  ({vram:.1f} GB)")
 
     device = torch.device(DEC_DEVICE)
     Path(args.out_dir).mkdir(parents=True, exist_ok=True)
     Path(args.results_dir).mkdir(parents=True, exist_ok=True)
 
-    # ── Załaduj Qwena ──────────────────────────────────────────────────────
-    qwen = load_qwen_predictor(args.qwen_ckpt, finetune=args.finetune_qwen)
+    qwen      = load_qwen_predictor(args.qwen_ckpt, finetune=False)
     processor = AutoProcessor.from_pretrained(MODEL_ID)
+    unet      = build_unet_refiner(encoder_name=args.encoder).to(device)
 
-    # ── Zbuduj U-Net ───────────────────────────────────────────────────────
-    unet = build_unet_refiner().to(device)
+    ema_unet = AveragedModel(unet, multi_avg_fn=get_ema_multi_avg_fn(decay=0.9999))
+    print(f"EMA skonfigurowane (decay=0.9999, aktywne od epoki {args.ema_start})")
 
-    # ── Dane ───────────────────────────────────────────────────────────────
+    # ── Dane z curriculum dilation ─────────────────────────────────────────
     print("\nŁaduję datasety...")
-    train_ds = HybridArcadeDataset("train", args.data_root, processor, IMG_SIZE)
-    val_ds   = HybridArcadeDataset("val",   args.data_root, processor, IMG_SIZE)
+    init_dil = get_dilation_kernel_size(1, args.epochs,
+                                         max_dil=args.max_dilation,
+                                         min_dil=args.min_dilation)
+    print(f"  Curriculum: dilation {args.max_dilation}→{args.min_dilation}px "
+          f"przez {args.epochs} epok. Epoka 1: kernel={init_dil}")
 
-    loader_kw = dict(
-        num_workers  = args.num_workers,
-        pin_memory   = True,
-        collate_fn   = hybrid_collate_fn,
-    )
+    train_ds = HybridArcadeDataset("train", args.data_root, processor, IMG_SIZE,
+                                    dilation_kernel=init_dil)
+    val_ds   = HybridArcadeDataset("val",   args.data_root, processor, IMG_SIZE,
+                                    dilation_kernel=init_dil)
+
+    loader_kw    = dict(num_workers=args.num_workers, pin_memory=True,
+                        collate_fn=hybrid_collate_fn)
     train_loader = DataLoader(train_ds, batch_size=args.batch_size,
-                              shuffle=True, **loader_kw)
+                              shuffle=True,  **loader_kw)
     val_loader   = DataLoader(val_ds,   batch_size=args.batch_size,
                               shuffle=False, **loader_kw)
 
-    # ── Optimizer ──────────────────────────────────────────────────────────
-    unet_params = list(unet.parameters())
-    if args.finetune_qwen:
-        qwen_params = [p for p in qwen.parameters() if p.requires_grad]
-        optimizer = torch.optim.AdamW([
-            {"params": unet_params, "lr": args.lr},
-            {"params": qwen_params, "lr": args.lr * 0.01},  # Qwen: 100x mniejszy lr
-        ], weight_decay=1e-4)
-        print(f"Finetune Qwen: {sum(p.numel() for p in qwen_params)/1e6:.2f}M params")
-    else:
-        optimizer = torch.optim.AdamW(unet_params, lr=args.lr, weight_decay=1e-4)
-
+    optimizer = torch.optim.AdamW(unet.parameters(), lr=args.lr, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-        optimizer, T_max=args.epochs, eta_min=1e-6,
+        optimizer, T_max=args.epochs, eta_min=1e-7)
+
+    criterion = CombinedLossV4(
+        pos_weight=args.pos_weight,
+        conn_max=args.conn_weight,
+        qwen_w=args.qwen_weight,
+        warmup_conn=args.warmup_conn,
     )
-    criterion = BCEDiceLoss()
+    scaler     = torch.cuda.amp.GradScaler()
+    early_stop = EarlyStopping(patience=args.patience, min_delta=1e-4)
 
-    print(f"U-Net trainable: {sum(p.numel() for p in unet_params)/1e6:.2f}M params")
-    print(f"Epochs: {args.epochs}  batch: {args.batch_size}  lr: {args.lr}")
+    print(f"\nEncoder: {args.encoder} | Epochs: {args.epochs} | "
+          f"Batch: {args.batch_size} | LR: {args.lr}")
+    print(f"Loss: FocalTversky + Connectivity(w={args.conn_weight}) "
+          f"+ QwenGuided(w={args.qwen_weight})")
+    print(f"Curriculum: dilation {args.max_dilation}→{args.min_dilation}px")
 
-    # ── Trening ────────────────────────────────────────────────────────────
     best_val_dice = 0.0
-    ckpt_path = Path(args.out_dir) / "qwen_unet_best.pth"
-    history   = []
+    ckpt_path     = Path(args.out_dir) / "qwen_unet_best.pth"
+    history       = []
 
-    header = f"{'Epoch':>5} | {'Loss':>7} | {'Tr.Dice':>7} | {'Val.Dice':>8} | {'Val.IoU':>7}"
+    header = (f"{'Epoch':>5} | {'Loss':>7} | {'Tr.Dice':>7} | "
+              f"{'Val.Dice':>8} | {'Lconn':>7} | {'Lqwen':>6} | {'Dil':>4} | {'LR':>8}")
     print(f"\n{header}")
     print("─" * len(header))
 
     for epoch in range(1, args.epochs + 1):
         t0 = time.time()
-        tr = train_epoch(qwen, unet, train_loader, optimizer, criterion, device)
-        vl = eval_epoch(qwen,  unet, val_loader,   criterion, device)
+
+        # ── Aktualizuj curriculum dilation ────────────────────────────────
+        dil_k = get_dilation_kernel_size(epoch, args.epochs,
+                                          max_dil=args.max_dilation,
+                                          min_dil=args.min_dilation)
+        train_ds.dilation_kernel = dil_k
+        val_ds.dilation_kernel   = dil_k
+        criterion.set_epoch(epoch)
+
+        tr = train_epoch(qwen, unet, train_loader, optimizer, criterion, device, scaler)
+
+        if epoch >= args.ema_start:
+            ema_unet.update_parameters(unet)
+
+        vl = eval_epoch(qwen, unet, val_loader, criterion, device,
+                        threshold=0.5, use_tta=False)
         scheduler.step()
-        sec = time.time() - t0
+
+        current_lr = optimizer.param_groups[0]["lr"]
+        sec        = time.time() - t0
 
         print(f"{epoch:>5} | {tr['loss']:>7.4f} | {tr['dice']:>7.4f} | "
-              f"{vl['dice']:>8.4f} | {vl['iou']:>7.4f}  ({sec:.0f}s)")
-        history.append({"epoch": epoch, "train": tr, "val": vl})
+              f"{vl['dice']:>8.4f} | {tr.get('loss_conn', 0):>7.4f} | "
+              f"{tr.get('loss_qwen', 0):>6.4f} | {dil_k:>4} | {current_lr:>8.2e}  "
+              f"({sec:.0f}s)")
+
+        history.append({
+            "epoch": epoch, "lr": current_lr, "dilation": dil_k,
+            "train": tr, "val": vl,
+        })
 
         if vl["dice"] > best_val_dice:
             best_val_dice = vl["dice"]
+            save_weights  = (ema_unet.module.state_dict()
+                             if epoch >= args.ema_start else unet.state_dict())
             torch.save({
                 "epoch":    epoch,
-                "unet":     unet.state_dict(),
+                "unet":     save_weights,
                 "val_dice": best_val_dice,
                 "config": {
                     "qwen_ckpt":     args.qwen_ckpt,
-                    "finetune_qwen": args.finetune_qwen,
+                    "encoder":       args.encoder,
                     "batch_size":    args.batch_size,
                     "lr":            args.lr,
+                    "pos_weight":    args.pos_weight,
+                    "max_dilation":  args.max_dilation,
+                    "min_dilation":  args.min_dilation,
+                    "conn_weight":   args.conn_weight,
+                    "qwen_weight":   args.qwen_weight,
                 },
             }, ckpt_path)
-            print(f"       ↑ best val Dice {best_val_dice:.4f} — zapisany")
+            ema_str = "(EMA)" if epoch >= args.ema_start else "(raw)"
+            print(f"       ↑ best val Dice {best_val_dice:.4f} {ema_str}  dil={dil_k}")
 
-    # ── Test ───────────────────────────────────────────────────────────────
-    print("\n" + "=" * 55)
-    print("Ładuję najlepszy checkpoint do ewaluacji testowej...")
+        if early_stop(vl["dice"]):
+            print(f"\nEarly stopping w epoce {epoch}")
+            break
+
+    # ── Optymalizacja progu ─────────────────────────────────────────────────
+    print("\nSzukam optymalnego progu decyzyjnego...")
     ckpt = torch.load(ckpt_path, map_location=device)
     unet.load_state_dict(ckpt["unet"])
+    best_threshold = find_best_threshold(qwen, unet, val_loader, device)
+
+    # ── Test z TTA ─────────────────────────────────────────────────────────
+    print("\n" + "=" * 60)
+    print("Ewaluacja testowa z TTA i optymalnym progiem...")
 
     try:
-        test_ds = HybridArcadeDataset("test", args.data_root, processor, IMG_SIZE)
+        test_ds = HybridArcadeDataset("test", args.data_root, processor, IMG_SIZE,
+                                       dilation_kernel=1)   # test: bez dylatacji
         test_loader = DataLoader(test_ds, batch_size=args.batch_size,
                                  shuffle=False, **loader_kw)
-        test_m = eval_epoch(qwen, unet, test_loader, criterion, device)
 
-        print("\nWYNIKI TESTOWE")
-        print("┌──────────────────────────────────────┐")
+        test_m = eval_epoch(qwen, unet, test_loader, criterion, device,
+                            threshold=best_threshold, use_tta=True)
+
+        print("\nWYNIKI TESTOWE (EMA + TTA + optymalny próg)")
+        print("┌──────────────────────────────────────────┐")
         for k, v in test_m.items():
             if k != "loss":
-                print(f"│  {k:<14} {v:.4f}                 │")
-        print("└──────────────────────────────────────┘")
+                print(f"│  {k:<14} {v:.4f}                   │")
+        print(f"│  {'threshold':<14} {best_threshold:.3f}                   │")
+        print("└──────────────────────────────────────────┘")
 
-        # Panele predykcji do pracy
-        pred_dir = Path(args.results_dir) / "qwen_unet_predictions"
-        save_predictions(qwen, unet, test_loader, device, pred_dir, n=12)
+        pred_dir = Path(args.results_dir) / "qwen_unet_v4_predictions"
+        save_predictions(qwen, unet, test_loader, device,
+                         pred_dir, threshold=best_threshold, n=12)
 
         results = {
-            "model":         "Qwen3-VL (LoRA+DeepStack) → U-Net refinement",
+            "model":         f"Qwen3-VL → U-Net v4 ({args.encoder}+scSE+curriculum)",
             "dataset":       "ARCADE syntax — binary vessel segmentation",
             "split":         "test",
             "best_val_dice": round(best_val_dice, 4),
+            "threshold":     round(best_threshold, 3),
             "test_metrics":  {k: round(v, 4) for k, v in test_m.items()},
             "history":       history,
-            "config": {
-                "qwen_ckpt":     args.qwen_ckpt,
-                "unet_encoder":  "resnet34",
-                "in_channels":   4,
-                "epochs":        args.epochs,
-                "batch_size":    args.batch_size,
-                "lr":            args.lr,
-                "finetune_qwen": args.finetune_qwen,
-            },
+            "config": vars(args),
         }
-        out_json = Path(args.results_dir) / "qwen_unet_metrics.json"
-        with open(out_json, "w") as f:
-            json.dump(results, f, indent=2)
+        out_json = Path(args.results_dir) / "qwen_unet_v4_metrics.json"
+        with open(out_json, "w", encoding="utf-8") as f:
+            json.dump(results, f, indent=2, ensure_ascii=False)
         print(f"\nWyniki → {out_json}")
 
     except (FileNotFoundError, RuntimeError) as e:
         print(f"[SKIP] Ewaluacja testowa pominięta: {e}")
 
     print(f"Checkpoint → {ckpt_path}")
-    print("Gotowe.")
+    print("Gotowe!")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Qwen3-VL + U-Net refinement — segmentacja naczyń wieńcowych ARCADE"
+        description="Qwen3-VL + U-Net refinement v4 — curriculum + connectivity loss"
     )
-    parser.add_argument(
-        "--qwen-ckpt", required=True,
-        help="Ścieżka do checkpointu Qwena (np. checkpoints/qwen_seg_best_LoRA_deepstack.pth)"
-    )
-    parser.add_argument(
-        "--finetune-qwen", action="store_true",
-        help="Jeśli ustawione: fine-tune LoRA adaptery Qwena razem z U-Netem (wolniejsze)"
-    )
-    parser.add_argument("--data-root",   default="data")
-    parser.add_argument("--out-dir",     default="checkpoints")
-    parser.add_argument("--results-dir", default="results")
-    parser.add_argument("--epochs",      type=int,   default=50)
-    parser.add_argument("--batch-size",  type=int,   default=2,
-                        help="2 jest bezpieczne przy 2× RTX 4080 SUPER; zwiększ do 4 jeśli VRAM pozwala")
-    parser.add_argument("--lr",          type=float, default=1e-4)
-    parser.add_argument("--num-workers", type=int,   default=2)
+    parser.add_argument("--qwen-ckpt",     required=True)
+    parser.add_argument("--encoder",       default="resnet34",
+                        choices=["resnet34", "resnet50", "efficientnet-b4",
+                                 "resnext50_32x4d", "timm-efficientnet-b5"])
+    parser.add_argument("--data-root",     default="data")
+    parser.add_argument("--out-dir",       default="checkpoints")
+    parser.add_argument("--results-dir",   default="results")
+    parser.add_argument("--epochs",        type=int,   default=50)
+    parser.add_argument("--batch-size",    type=int,   default=2)
+    parser.add_argument("--lr",            type=float, default=1e-5)
+    parser.add_argument("--num-workers",   type=int,   default=2)
+    parser.add_argument("--patience",      type=int,   default=10)
+    parser.add_argument("--pos-weight",    type=float, default=20.0)
+    parser.add_argument("--ema-start",     type=int,   default=5)
+    # ── Curriculum ──────────────────────────────────────────────────────────
+    parser.add_argument("--max-dilation",  type=int,   default=9,
+                        help="Rozmiar kernela dylatacji w epoce 1 (styl Qwena)")
+    parser.add_argument("--min-dilation",  type=int,   default=1,
+                        help="Rozmiar kernela dylatacji w ostatniej epoce (GT)")
+    # ── Loss weights ────────────────────────────────────────────────────────
+    parser.add_argument("--conn-weight",   type=float, default=0.3,
+                        help="Max waga connectivity loss")
+    parser.add_argument("--qwen-weight",   type=float, default=0.2,
+                        help="Waga QwenGuided loss (trzyma U-Net blisko Qwena)")
+    parser.add_argument("--warmup-conn",   type=int,   default=5,
+                        help="Epoki warmup dla connectivity loss")
 
     main(parser.parse_args())
