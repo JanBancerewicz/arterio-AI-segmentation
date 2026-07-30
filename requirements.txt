@@ -1,5 +1,5 @@
 # ==========================================
-# INSTALACJA PYTORCH (wykonaj ręcznie jako pierwsze):
+# PYTORCH INSTALATION (domanually first):
 # pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 # ==========================================
 
@@ -14,19 +14,19 @@ scikit-image
 matplotlib>=3.8.0
 
 # --- Segmentacja (NOWE) ---
-segmentation-models-pytorch>=0.3.3   # U-Net z gotowymi encoderami (baseline)
-albumentations>=1.4.0                # Augmentacje obrazu medycznego
+segmentation-models-pytorch>=0.3.3   # U-Net with encoders (baseline)
+albumentations>=1.4.0                # Medical Image Augmentation
 
 # --- Hugging Face (Qwen3-VL) ---
-transformers>=4.51.0                 # Qwen3-VL wymaga najnowszej wersji
+transformers>=4.51.0                 # Qwen3-VL (requires the newest version)
 accelerate>=0.29.0
 peft>=0.11.0                        # LoRA
-bitsandbytes>=0.43.0                # QLoRA (opcja na słabszym GPU)
+bitsandbytes>=0.43.0                # QLoRA (option for less-performative GPU)
 huggingface_hub
 datasets>=2.18.0
 
 # --- Qwen VL utils ---
-qwen-vl-utils>=0.0.8                # Preprocessing wizualny Qwen
+qwen-vl-utils>=0.0.8                # Qwen Visual Preprocessing
 
 # --- Narzędzia ---
 tqdm>=4.66.0

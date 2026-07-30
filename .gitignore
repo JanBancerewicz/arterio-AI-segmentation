@@ -238,6 +238,8 @@ results/infer/qwen_masks/*
 results/infer/unet_probs/*
 !results/infer/masks/.gitkeep
 !results/infer/panels/.gitkeep
+# Qualitative example embedded in README — tracked
+!results/infer/panels/195_panel.png
 !results/infer/qwen_masks/.gitkeep
 !results/infer/unet_probs/.gitkeep
 results/*_predictions/
