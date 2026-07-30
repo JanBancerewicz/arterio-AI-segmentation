@@ -1,3 +1,4 @@
+# ten plik jest obecnie nieaktywny, ani nigdzie niewykorzystywany, jest w .gitignore i wymaga zaaktualizowania do gemma4b quantized oraz sam był wzorowany na train_qwen_seg.py, który jest deprecated
 """
 train_gemma_seg.py
 ===================

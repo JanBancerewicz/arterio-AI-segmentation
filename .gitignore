@@ -229,6 +229,9 @@ wyniki_treningu/
 results/**/*.png
 results/**/*.jpg
 results/**/*.jpeg
+# English thesis plots — tracked (override the *.png rule above)
+!results/plots_en/
+!results/plots_en/*.png
 results/infer/masks/*
 results/infer/panels/*
 results/infer/qwen_masks/*
@@ -264,8 +267,15 @@ __marimo__/
 # files that are obsolete:
 data/syntax/train/train_qwen.json
 data/syntax/val/val_qwen.json
+train_gemma_seg.py
 
-# files that are middle-ware:
-# results/infer/metrics.json
+
+# files that are middle-ware for generating plots:
+# results/qwen_metrics_frozen_deepstack.json
+# results/qwen_metrics_frozen_last_only.json
+# results/qwen_metrics_LoRA_deepstack.json
 # results/qwen_unet_metrics.json
 # results/qwen_unet_v4_metrics.json
+# results/unet_baseline_full_50ep.json
+# results/unet_metrics.json
+# results/unet_smoke_test_2epoch.json

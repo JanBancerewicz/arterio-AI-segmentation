@@ -1,40 +1,27 @@
 """
 evaluate.py
 ============
-Evaluation script for coronary vessel segmentation.
+Evaluation for coronary vessel segmentation.
 
-Computes all metrics needed for the thesis results table:
-    - Dice Score      — primary metric for binary segmentation
-    - IoU             — Jaccard index (stricter than Dice)
-    - Pixel Accuracy  — fraction of correct pixels
-    - Precision       — TP / (TP + FP)
-    - Recall          — TP / (TP + FN)  [sensitivity]
-    - clDice          — centerline Dice, topology-aware metric for tubular
-                        structures. Penalises predictions that "cut" a vessel
-                        even when volumetric overlap is high.
-                        Reference: Shit et al., CVPR 2021, arXiv:2003.07311
+Metrics: Dice, IoU, pixel accuracy, precision, recall, clDice
+(clDice: Shit et al., CVPR 2021, arXiv:2003.07311).
 
-Supports three evaluation modes:
-    1. U-Net checkpoint (from train_unet.py)
-    2. Qwen3-VL checkpoint (from train_qwen_seg.py)
-    3. Folder of pre-saved prediction PNGs (model-agnostic)
+Modes:
+    1. U-Net checkpoint (train_unet.py)
+    2. Qwen3-VL checkpoint (train_qwen_seg_new.py)
+    3. Folder of prediction PNGs
+    4. --compare across results/*metrics*.json
 
 Usage:
-    # Evaluate U-Net checkpoint on test split
-    python evaluate.py --model unet \
-                       --checkpoint checkpoints/unet_best.pth \
-                       --split test
+    python evaluate.py --model unet \\
+                       --checkpoint checkpoints/unet_best.pth --split test
 
-    # Evaluate Qwen frozen encoder
-    python evaluate.py --model qwen \
-                       --checkpoint checkpoints/qwen_seg_best.pth \
-                       --split test
+    python evaluate.py --model qwen \\
+                       --checkpoint checkpoints/qwen_seg_best_LoRA_deepstack.pth \\
+                       --split test --batch-size 1
 
-    # Evaluate from pre-saved prediction PNGs
-    python evaluate.py --pred-dir results/my_predictions \
-                       --mask-dir data/masks/test
+    python evaluate.py --pred-dir results/my_predictions --mask-dir data/masks/test
 
-    # Compare all models and print thesis table
     python evaluate.py --compare
 """
 
@@ -279,42 +266,113 @@ def eval_qwen_checkpoint(
     checkpoint_path: Path,
     split: str,
     data_root: str = "data",
-    batch_size: int = 4,
+    batch_size: int = 1,
     save_preds: bool = True,
     results_dir: Path = Path("results"),
 ) -> dict:
-    """Loads a Qwen3-VL segmentation checkpoint and evaluates on the given split."""
-    from transformers import AutoProcessor, Qwen2_5_VLForConditionalGeneration
-    from train_qwen_seg import QwenArcadeDataset, QwenSegmenter, SegDecoder, qwen_collate_fn
+    """
+    Load a Qwen3-VL + SegDecoder checkpoint (train_qwen_seg_new.py) and
+    evaluate on the given split.
+    """
+    from peft import LoraConfig, get_peft_model, set_peft_model_state_dict
+    from transformers import AutoProcessor, Qwen3VLForConditionalGeneration
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    from train_qwen_seg_new import (
+        DEC_DEVICE,
+        IMG_SIZE,
+        MODEL_ID as DEFAULT_MODEL_ID,
+        QwenArcadeDataset,
+        QwenSegmenter,
+        SegDecoder,
+        qwen_collate_fn,
+    )
 
-    ckpt     = torch.load(checkpoint_path, map_location=device)
-    model_id = ckpt.get("model_id", "Qwen/Qwen3-VL-8B-Instruct")
-    use_lora = ckpt.get("lora", False)
-    mode     = "LoRA" if use_lora else "frozen"
+    if batch_size > 2:
+        print(f"[WARN] Qwen eval batch-size={batch_size} is large for 8B VL; "
+              f"capping to 1 to avoid OOM.")
+        batch_size = 1
 
-    print(f"Loaded Qwen checkpoint  epoch={ckpt.get('epoch','?')}  "
-          f"val_dice={ckpt.get('val_dice', 0):.4f}  mode={mode}")
+    ckpt = torch.load(checkpoint_path, map_location=DEC_DEVICE)
+    cfg  = ckpt.get("config", {})
+    model_id      = cfg.get("model_id", ckpt.get("model_id", DEFAULT_MODEL_ID))
+    use_deepstack = cfg.get("use_deepstack", ckpt.get("fusion") is not None)
+    use_lora      = cfg.get("use_lora", False) or ("lora_state" in ckpt)
+    lora_r        = cfg.get("lora_r") or 16
+    mode          = "LoRA" if use_lora else "frozen"
+    fuse          = "deepstack" if use_deepstack else "last_only"
 
-    encoder   = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-        model_id, torch_dtype=torch.bfloat16, device_map="auto"
+    print(f"Loaded Qwen checkpoint  epoch={ckpt.get('epoch', '?')}  "
+          f"val_dice={ckpt.get('val_dice', 0):.4f}  mode={mode}/{fuse}")
+    print(f"  model_id={model_id}")
+
+    print(f"\nLoading {model_id} …")
+    vl_model = Qwen3VLForConditionalGeneration.from_pretrained(
+        model_id,
+        dtype=torch.bfloat16,
+        device_map="auto",
+        low_cpu_mem_usage=True,
     )
     processor = AutoProcessor.from_pretrained(model_id)
-    decoder   = SegDecoder(in_channels=1152, out_size=512).to(device)
+
+    if use_lora and "lora_state" in ckpt:
+        print("  Applying LoRA adapters…")
+        lora_cfg = LoraConfig(
+            r=lora_r,
+            lora_alpha=lora_r * 2,
+            target_modules=["qkv", "linear_fc1", "linear_fc2"],
+            lora_dropout=0.0,
+            bias="none",
+        )
+        vl_model = get_peft_model(vl_model, lora_cfg)
+        set_peft_model_state_dict(vl_model, ckpt["lora_state"])
+        print("  LoRA weights loaded.")
+    else:
+        for p in vl_model.parameters():
+            p.requires_grad = False
+
+    base = vl_model
+    if hasattr(vl_model, "base_model") and hasattr(vl_model.base_model, "model"):
+        base = vl_model.base_model.model
+    vc = base.config.vision_config
+
+    decoder = SegDecoder(
+        in_channels=vc.out_hidden_size, base_channels=512
+    ).to(DEC_DEVICE)
     decoder.load_state_dict(ckpt["decoder"])
+    print(f"  Decoder loaded ({sum(p.numel() for p in decoder.parameters()) / 1e6:.2f}M params)")
 
-    model = QwenSegmenter(encoder, decoder)
-    model.eval()
+    segmenter = QwenSegmenter(
+        vl_model=vl_model,
+        decoder=decoder,
+        use_deepstack=use_deepstack,
+        spatial_merge=vc.spatial_merge_size,
+        patch_size=vc.patch_size,
+        img_size=IMG_SIZE,
+    )
+    if segmenter.fusion is not None:
+        segmenter.fusion.to(DEC_DEVICE)
+        if ckpt.get("fusion") is not None:
+            segmenter.fusion.load_state_dict(ckpt["fusion"])
+            print("  DeepStack fusion loaded.")
+        else:
+            print("  [WARN] use_deepstack=True but checkpoint has no fusion weights.")
 
-    ds     = QwenArcadeDataset(split, data_root, processor)
+    for p in segmenter.parameters():
+        p.requires_grad = False
+    segmenter.eval()
+
+    ds = QwenArcadeDataset(split, data_root, processor, IMG_SIZE)
     loader = torch.utils.data.DataLoader(
-        ds, batch_size=batch_size, shuffle=False,
-        num_workers=2, collate_fn=qwen_collate_fn
+        ds,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=2,
+        pin_memory=True,
+        collate_fn=qwen_collate_fn,
     )
 
-    suffix   = "lora" if use_lora else "frozen"
-    pred_dir = results_dir / f"qwen_{suffix}_predictions" / split
+    tag = f"{mode}_{fuse}".replace(" ", "_")
+    pred_dir = results_dir / f"qwen_{tag}_predictions" / split
     if save_preds:
         pred_dir.mkdir(parents=True, exist_ok=True)
 
@@ -322,16 +380,21 @@ def eval_qwen_checkpoint(
         k: [] for k in ["dice", "iou", "pixel_acc", "precision", "recall", "cl_dice"]
     }
 
+    use_cuda = torch.cuda.is_available()
     with torch.no_grad():
-        for batch in tqdm(loader, desc=f"Qwen {mode} [{split}]"):
-            pv  = batch["pixel_values"].to(device)
-            thw = batch["image_grid_thw"].to(device)
+        for batch in tqdm(loader, desc=f"Qwen {mode}/{fuse} [{split}]"):
+            pv  = batch["pixel_values"].to(DEC_DEVICE, dtype=torch.bfloat16)
+            thw = batch["image_grid_thw"].to(DEC_DEVICE)
             tgt = batch["mask"].numpy()
             stems = batch["stem"]
 
-            with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
-                logits = model(pv, thw)
-            preds_bin = (torch.sigmoid(logits) > 0.5).cpu().numpy()
+            if use_cuda:
+                with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
+                    logits = segmenter(pv, thw)
+            else:
+                logits = segmenter(pv, thw)
+
+            preds_bin = (torch.sigmoid(logits.float()) > 0.5).cpu().numpy()
 
             for i, stem in enumerate(stems):
                 pred_np = (preds_bin[i, 0] * 255).astype(np.uint8)
@@ -342,7 +405,7 @@ def eval_qwen_checkpoint(
                 if save_preds:
                     _save_comparison(stem, pred_np, gt_np, m, pred_dir)
 
-    return aggregate(per_image)
+    return aggregate(per_image), f"Qwen3-VL-8B + SegDecoder ({mode}, {fuse})"
 
 
 # ──────────────────────────────────────────────────────────────
@@ -394,11 +457,7 @@ def _save_comparison(
 # ──────────────────────────────────────────────────────────────
 
 def print_table(results: dict[str, dict]) -> None:
-    """
-    Prints a formatted results table ready to transcribe into the thesis.
-
-    results: {"Model Name": aggregated_metrics_dict, ...}
-    """
+    """Print a comparison table of aggregated metrics per model."""
     metrics = ["dice", "iou", "pixel_acc", "precision", "recall", "cl_dice"]
     header  = f"{'Model':<35}" + "".join(f"  {m:>10}" for m in metrics)
 
@@ -493,16 +552,20 @@ def main(args: argparse.Namespace) -> None:
         out_name    = f"unet_metrics_{args.split}.json"
 
     elif args.model == "qwen":
-        agg = eval_qwen_checkpoint(
+        # Default CLI batch-size is 8 (for U-Net); Qwen-8B needs 1.
+        qwen_bs = args.batch_size
+        if qwen_bs == 8:
+            qwen_bs = 1
+            print("[INFO] Using --batch-size 1 for Qwen eval (override with an explicit value ≠ 8).")
+        agg, model_label = eval_qwen_checkpoint(
             checkpoint_path = ckpt_path,
             split           = args.split,
             data_root       = args.data_root,
-            batch_size      = args.batch_size,
+            batch_size      = qwen_bs,
             save_preds      = args.save_preds,
             results_dir     = results_dir,
         )
-        model_label = "Qwen3-VL + SegDecoder"
-        out_name    = f"qwen_metrics_{args.split}.json"
+        out_name = f"qwen_metrics_{args.split}.json"
 
     else:
         raise ValueError(f"Unknown model type: {args.model}")
@@ -538,7 +601,8 @@ if __name__ == "__main__":
     parser.add_argument("--split",      default="test",
                         choices=["train", "val", "test"])
     parser.add_argument("--data-root",  default="data")
-    parser.add_argument("--batch-size", type=int, default=8)
+    parser.add_argument("--batch-size", type=int, default=8,
+                        help="Batch size (U-Net default 8; Qwen auto-falls back to 1)")
     parser.add_argument("--results-dir",default="results")
     parser.add_argument("--save-preds", action="store_true", default=True,
                         help="Save prediction panel PNGs")

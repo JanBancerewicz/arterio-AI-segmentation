@@ -1,59 +1,37 @@
 """
-infer_qwen_unet.py  —  Inferencja: Qwen3-VL → U-Net refinement
-===============================================================
-Wczytuje wytrenowane checkpointy i produkuje maski dla obrazów.
+inference_qwen_unet.py
+======================
+Inference: frozen Qwen3-VL mask → U-Net refinement → vessel masks.
 
-UŻYCIE:
-
-  # Jeden obraz
-  python infer_qwen_unet.py \
-      --qwen-ckpt  checkpoints/qwen_seg_best_LoRA_deepstack.pth \
-      --unet-ckpt  checkpoints/qwen_unet_best.pth \
-      --input      data/syntax/test/images/001.png \
+Usage:
+  # Single image
+  python inference_qwen_unet.py \\
+      --qwen-ckpt  checkpoints/qwen_seg_best_LoRA_deepstack.pth \\
+      --unet-ckpt  checkpoints/qwen_unet_best.pth \\
+      --input      data/syntax/test/images/1.png \\
       --out-dir    results/infer
 
-  # Cały folder obrazów
-  python infer_qwen_unet.py \
-      --qwen-ckpt  checkpoints/qwen_seg_best_LoRA_deepstack.pth \
-      --unet-ckpt  checkpoints/qwen_unet_best.pth \
-      --input      data/syntax/test/images/ \
-      --out-dir    results/infer
-
-  # Z ground truth (liczy Dice, IoU itd.) + TTA
-  python infer_qwen_unet.py \
-      --qwen-ckpt  checkpoints/qwen_seg_best_LoRA_deepstack.pth \
-      --unet-ckpt  checkpoints/qwen_unet_best.pth \
-      --input      data/syntax/test/images/ \
-      --masks-dir  data/masks/test/ \
-      --out-dir    results/infer \
+  # Full folder + GT metrics + TTA
+  python inference_qwen_unet.py \\
+      --qwen-ckpt  checkpoints/qwen_seg_best_LoRA_deepstack.pth \\
+      --unet-ckpt  checkpoints/qwen_unet_best.pth \\
+      --input      data/syntax/test/images/ \\
+      --masks-dir  data/masks/test/ \\
+      --out-dir    results/infer \\
+      --threshold  0.375 \\
       --tta
 
-  # Z własnym progiem (zamiast domyślnego 0.5)
-  python infer_qwen_unet.py \
-      --qwen-ckpt  checkpoints/qwen_seg_best_LoRA_deepstack.pth \
-      --unet-ckpt  checkpoints/qwen_unet_best.pth \
-      --input      data/syntax/test/images/ \
-      --masks-dir  data/masks/test/ \
-      --threshold  0.42 \
-      --tta
+Outputs (under --out-dir):
+  masks/       — binary U-Net masks
+  qwen_masks/  — binary Qwen-only masks
+  panels/      — XCA | Qwen | Qwen+UNet | GT | overlay
+  unet_probs/  — probability maps (if --save-probs)
+  metrics.json — metrics when --masks-dir is set
 
-WYJŚCIE (w --out-dir):
-  masks/          ← binarne maski PNG (0/255) z U-Neta
-  qwen_masks/     ← binarne maski PNG z samego Qwena (do porównania)
-  panels/         ← kolorowe panele: XCA | Qwen | Qwen+UNet | GT | Overlay (jeśli podano maski)
-  unet_probs/     ← mapy prawdopodobieństwa 0-255 (tylko gdy --save-probs)
-  metrics.json    ← metryki (jeśli podano --masks-dir)
-
-NAPRAWIONE względem v1:
-  - [KRYTYCZNE] Maska Qwena binaryzowana (>0.5) przed podaniem do U-Neta —
-    zgodnie z treningiem (train_qwen_unet.py frozen-path); ciągły sigmoid
-    powodował degradację jakości (~2-4pp Dice)
-  - [KRYTYCZNE] TTA również używa binarnej maski Qwena (spójność z treningiem)
-  - Panele zapisywane w BGR (kolorowy overlay TP/FP/FN widoczny w pliku)
-  - load_state_dict z obsługą błędu kształtów (strict=True + czytelny komunikat)
-  - build_unet_refiner: dodano scse + encoder czytany z checkpointu
-  - spójny dostęp do vision_config niezależnie od LoRA
-  - tabela metryk Qwen vs Qwen+UNet z deltą
+Notes:
+  - Qwen mask is binarised (>0.5) before the U-Net, matching training
+  - TTA uses the same binary Qwen mask
+  - U-Net encoder name / scSE come from the checkpoint config
 """
 
 import argparse
@@ -81,7 +59,7 @@ IMAGENET_STD  = (0.229, 0.224, 0.225)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Architektury  —  identyczne z train_qwen_unet.py
+# Model components (shared with qwen_unet_pipeline.py)
 # ══════════════════════════════════════════════════════════════════════════════
 
 class SegDecoder(nn.Module):
@@ -175,14 +153,8 @@ class QwenMaskPredictor(nn.Module):
 
 def build_unet_refiner(encoder_name: str = "resnet34") -> nn.Module:
     """
-    Identyczne z train_qwen_unet.py:
-      - decoder_attention_type="scse"
-      - 4 kanały wejścia (3 RGB + 1 binarna maska Qwena)
-      - encoder_name czytany z checkpointu
-
-    Uwaga: wagi Conv2d pierwszej warstwy nie są tu inicjalizowane z ImageNet
-    (robi to train), bo load_state_dict nadpisze je wczytanymi z checkpointu.
-    Ważne jest tylko żeby kształt tensora zgadzał się z checkpointem.
+    U-Net with scSE, 4 input channels (RGB + Qwen mask).
+    First conv is patched from 3→4 channels; weights come from the checkpoint.
     """
     model = smp.Unet(
         encoder_name           = encoder_name,
@@ -357,15 +329,9 @@ def preprocess_image(img_path: Path, processor):
 @torch.no_grad()
 def predict_with_tta(qwen, unet, pv, thw, img_tensor, use_tta: bool = True):
     """
-    Qwen uruchamiany tylko raz (oszczędność VRAM).
+    Run Qwen once, then U-Net on original + H/V/HV flips (optional TTA).
 
-    WAŻNE: maska Qwena jest binaryzowana (>0.5) przed podaniem do U-Neta,
-    dokładnie tak jak podczas treningu (frozen-Qwen path w train_qwen_unet.py).
-    Podawanie ciągłego sigmoid obniża jakość o ~2-4pp Dice bo model nigdy
-    tego rozkładu nie widział podczas treningu.
-
-    U-Net uruchamiany na 4 wariantach: oryginał + flip H + flip V + oba.
-    Wyniki uśredniane przed binaryzacją.
+    Qwen mask is binarised (>0.5) before the U-Net — same as training.
     """
     with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
         qwen_prob = qwen(pv, thw).float()    # (1, 1, 512, 512)  ciągłe

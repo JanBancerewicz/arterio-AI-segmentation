@@ -1,18 +1,18 @@
 """
 train_unet.py
 ==============
-U-Net baseline for binary coronary vessel segmentation on ARCADE syntax dataset.
+U-Net baseline for binary coronary vessel segmentation on ARCADE syntax.
 
-Run AFTER convert_masks.py has generated binary masks.
+Run after convert_mask.py has produced binary masks.
 
 Usage:
     python train_unet.py
-    python train_unet.py --epochs 100 --batch-size 16
+    python train_unet.py --epochs 50 --batch-size 8
 
 Output:
-    checkpoints/unet_best.pth     <- best model by val Dice
-    results/unet_metrics.json     <- final test metrics for thesis table
-    results/unet_predictions/     <- sample prediction PNGs
+    checkpoints/unet_best.pth
+    results/unet_metrics.json
+    results/unet_predictions/
 """
 
 import argparse
@@ -243,10 +243,7 @@ def eval_epoch(model, loader, criterion, device) -> dict:
 
 @torch.no_grad()
 def save_predictions(model, loader, device, out_dir: Path, n: int = 10) -> None:
-    """
-    Saves [original XCA | ground truth mask | predicted mask] panels.
-    Use these images directly in the thesis results chapter.
-    """
+    """Save side-by-side panels: XCA | GT | prediction."""
     out_dir.mkdir(parents=True, exist_ok=True)
     model.eval()
     saved = 0
@@ -333,10 +330,7 @@ def main(args: argparse.Namespace) -> None:
     )
 
     # ── Model ─────────────────────────────────────────────────
-    # U-Net with ResNet-34 encoder pretrained on ImageNet.
-    # Standard baseline for medical image segmentation.
-    # ResNet-34 chosen over larger encoders (ResNet-50, EfficientNet) to
-    # keep the baseline simple and ensure Qwen3-VL improvements are visible.
+    # U-Net + ResNet-34 (ImageNet pretrained)
     model = smp.Unet(
         encoder_name    = cfg["encoder"],
         encoder_weights = cfg["encoder_weights"],
@@ -360,7 +354,7 @@ def main(args: argparse.Namespace) -> None:
         lr=cfg["lr"],
         weight_decay=cfg["weight_decay"],
     )
-    # Cosine annealing: smooth LR decay, better than step decay for segmentation
+    # Cosine annealing LR schedule
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         optimizer, T_max=cfg["epochs"], eta_min=1e-6,
     )
@@ -435,11 +429,11 @@ def main(args: argparse.Namespace) -> None:
                 print(f"│  {k:<14} {v:.4f}             │")
         print("└──────────────────────────────────┘")
 
-        # Save prediction panels for thesis
+        # Sample prediction panels
         pred_dir = Path(cfg["results_dir"]) / "unet_predictions"
         save_predictions(best_model, test_loader, device, pred_dir, n=12)
 
-        # Save JSON for thesis results table
+        # Metrics JSON
         results = {
             "model":         "U-Net (ResNet-34, ImageNet pretrained)",
             "dataset":       "ARCADE syntax — binary vessel segmentation",

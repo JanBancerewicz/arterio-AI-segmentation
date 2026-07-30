@@ -1,27 +1,15 @@
 """
 augmentations.py
 =================
-Augmentation pipelines for X-ray coronary angiography (XCA) images.
+Albumentations pipelines for XCA images (train / val / test).
 
-Design choices for medical XCA images:
-  - Geometric transforms: safe — vessels can appear at any angle/position
-  - Elastic deformation: moderate — simulates slight patient movement
-  - Brightness/contrast: yes — contrast agent concentration varies between patients
-  - Gaussian noise: yes — X-ray noise is realistic
-  - Color jitter / saturation: NO — XCA images are grayscale
-  - Heavy crops: NO — thin vessels could be completely cropped out
-  - Coarse dropout: small only — don't remove large vessel regions
+Geometric transforms and mild photometric noise only — no colour jitter
+(images are grayscale replicated to 3 channels). Avoid heavy crops so thin
+vessels are not removed entirely.
 
 Usage:
     from augmentations import get_transforms
-
     train_transform = get_transforms("train")
-    val_transform   = get_transforms("val")
-
-    # With albumentations:
-    augmented = train_transform(image=img_np, mask=mask_np)
-    image = augmented["image"]   # torch.Tensor (3, H, W)
-    mask  = augmented["mask"]    # torch.Tensor (H, W)
 """
 
 import albumentations as A

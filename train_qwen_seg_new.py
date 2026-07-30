@@ -1,58 +1,33 @@
 """
-train_qwen_seg.py  (v2 — fixed for Qwen3-VL)
-=============================================
+train_qwen_seg_new.py
+=====================
 Fine-tuning Qwen3-VL-8B-Instruct for binary coronary vessel segmentation on ARCADE.
 
-WHY V2:
-    v1 used Qwen2_5_VLForConditionalGeneration to load Qwen3-VL → this left
-    visual.blocks.*.mlp and visual.merger with RANDOM weights (confirmed in
-    load log: "Some weights ... were not initialized"). Val Dice plateaued at
-    ~0.42 on that broken encoder.
+Architecture:
+    Qwen3-VL vision tower (model.visual)  — frozen or LoRA
+      → last_hidden_state (+ optional deepstack features)
+      → reshape to (B, 4096, 16, 16)
+      → optional DeepStackFusion (learnable weighted sum)
+      → SegDecoder (upsample to 512×512)
+      → logits (B, 1, 512, 512)
 
-WHAT V2 FIXES:
-    1. Correct class: Qwen3VLForConditionalGeneration  (requires transformers>=4.57)
-    2. Correct vision tower forward signature + output unpacking
-       (tuple: last_hidden_state, deepstack_features)
-    3. Correct feature dim — reads vision_config.out_hidden_size (4096)
-       instead of hardcoded 1152 or LLM's config.hidden_size
-    4. Correct patch size (16, not 14)
-    5. Correct LoRA target_modules for vision tower: ["qkv", "linear_fc1", "linear_fc2"]
-       (the ViT uses FUSED qkv linear and qwen3-vl-specific MLP leaf names)
-    6. No GradScaler (bf16 doesn't need it)
-    7. Qwen3-VL processor flattens patches (no batch dim) — custom collate concatenates
-    8. Test-split evaluation at the end, JSON output for thesis results table
-    9. Decoder device handling for device_map="auto" (decoder sits on cuda:0)
+Included functionality:
+    - Qwen3VLForConditionalGeneration (transformers >= 4.57)
+    - vision features from vision_config.out_hidden_size (4096), patch 16, merge 2
+    - LoRA on vision tower: target_modules ["qkv", "linear_fc1", "linear_fc2"]
+    - optional --deepstack fusion of last + intermediate ViT features
+    - bf16 training without GradScaler
+    - custom collate for flattened Qwen image patches
+    - decoder on cuda:0 when the backbone uses device_map="auto"
+    - test-split evaluation and JSON metrics dump at the end
 
-ARCHITECTURE:
-    Qwen3-VL vision tower (model.visual)             ← frozen or LoRA
-        │
-        ├─ last_hidden_state                (B*256, 4096)
-        └─ deepstack_features × 3           (B*256, 4096) each      ← DeepStack outputs
-                        │
-                        │  reshape → (B, 4096, 16, 16)
-                        │
-                        │  [--deepstack]  DeepStackFusion: learnable weighted sum
-                        ▼
-                  SegDecoder (5× upsample + conv, 16→512 spatial, 4096→1 channels)
-                        ▼
-                  logits (B, 1, 512, 512)
+Resolved issues from earlier drafts:
+    - wrong model class left vision MLP / merger randomly initialised
+    - mismatched feature dim / patch size broke the spatial reshape
 
-VERIFIED AGAINST:
-    transformers           4.57.6
-    Qwen/Qwen3-VL-8B-Instruct — vision_config.hidden_size=1152,
-                                out_hidden_size=4096, patch=16, merge=2,
-                                deepstack_visual_indexes=[8,16,24], 27 ViT blocks
-    2× RTX 4080 SUPER (16.7 GB each) — model.from_pretrained(device_map="auto")
-
-EXPERIMENTS (thesis results table):
-    Row 1: U-Net baseline                                    test Dice 0.7955  (train_unet.py)
-    Row 2: Qwen3-VL frozen + last_hidden_state only         python train_qwen_seg.py --no-lora
-    Row 3: Qwen3-VL frozen + DeepStack fusion               python train_qwen_seg.py --no-lora --deepstack
-    Row 4: Qwen3-VL LoRA   + DeepStack fusion  (opt.)       python train_qwen_seg.py --lora    --deepstack
-
-USAGE:
-    nohup python train_qwen_seg.py --no-lora --deepstack --epochs 30 --batch-size 1 \
-        > logs/qwen_frozen_ds_$(date +%Y%m%d_%H%M).log 2>&1 &
+Usage:
+    python train_qwen_seg_new.py --no-lora --deepstack --epochs 30 --batch-size 1
+    python train_qwen_seg_new.py --lora --deepstack --epochs 30 --batch-size 1
 """
 
 import argparse
@@ -82,16 +57,11 @@ DEC_DEVICE = "cuda:0"   # decoder + loss stay on cuda:0; encoder is split by dev
 
 class SegDecoder(nn.Module):
     """
-    Lightweight CNN decoder mapping Qwen3-VL visual features to binary logits.
+    CNN decoder: Qwen3-VL spatial features → binary logits.
 
-    Design rationale for thesis:
-      - 1×1 projection drops 4096 → 512 channels before any 3×3 conv
-        (avoids ~18M weights in the first spatial conv)
-      - 5 upsampling stages of bilinear 2× + 2 conv3x3: 16→32→64→128→256→512
-        Bilinear (not ConvTranspose) avoids checkerboard artifacts in
-        medical imaging.
-      - BN + ReLU stabilise training from Kaiming init
-      - Head bias initialised to logit(0.1) ≈ -2.2  (vessels ≈ 10 % of pixels)
+    - 1×1 projection 4096 → 512 before 3×3 convs
+    - five bilinear 2× upsample stages to 512×512
+    - head bias init ≈ logit(0.1) for sparse vessel pixels
     """
 
     def __init__(self, in_channels: int = 4096, base_channels: int = 512):
@@ -450,8 +420,7 @@ def main(args: argparse.Namespace) -> None:
         #   - qkv          : FUSED Q/K/V linear in each ViT attn block
         #   - linear_fc1/2 : MLP in each ViT block and in the mergers
         # They do NOT collide with LLM leaves (which use q_proj/k_proj/v_proj/...).
-        # We intentionally skip the vision attn `proj` leaf because the LLM also
-        # exposes `proj` leaves which would match unwantedly.
+        # Skip vision attn `proj` — name collides with LLM leaves.
         lora_cfg = LoraConfig(
             r               = args.lora_r,
             lora_alpha      = args.lora_r * 2,
@@ -514,7 +483,7 @@ def main(args: argparse.Namespace) -> None:
         optimizer, T_max=args.epochs, eta_min=1e-6,
     )
     criterion = BCEDiceLoss()
-    # NOTE: no torch.amp.GradScaler — bf16 doesn't need loss scaling on Ampere+.
+    # bf16 — no GradScaler
 
     n_trainable = sum(p.numel() for p in optimizer.param_groups[0]["params"]) / 1e6
     print(f"Trainable params (primary group): {n_trainable:.2f}M")
@@ -554,7 +523,7 @@ def main(args: argparse.Namespace) -> None:
                 },
             }
             if args.lora:
-                # Adapter-only state (otherwise the full state_dict is ~16 GB)
+                # LoRA adapters only (full state_dict is huge)
                 ckpt["lora_state"] = get_peft_model_state_dict(vl_model)
             torch.save(ckpt, ckpt_path)
             print(f"       ↑ best val Dice {best_val_dice:.4f} — saved")

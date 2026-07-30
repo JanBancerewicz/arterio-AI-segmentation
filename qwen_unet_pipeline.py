@@ -1,35 +1,26 @@
 """
-train_qwen_unet.py  v4  —  Qwen3-VL (frozen) → U-Net refinement pipeline
-=========================================================================
-Coronary vessel segmentation on ARCADE syntax dataset.
+qwen_unet_pipeline.py
+=====================
+Train a U-Net refiner on top of a frozen Qwen3-VL vessel mask predictor (ARCADE).
 
-NAPRAWIONE względem v3:
-  - [GŁÓWNY PROBLEM] U-Net uczył się ścieńczać maskę Qwena → przerwy w naczyniach
-    Przyczyna: GT (cienkie linie) vs wejście Qwena (grube obszary) = mismatch stylu
+Pipeline:
+    XCA image → Qwen (frozen ckpt) → vessel mask
+             → concat with RGB → U-Net → refined mask
 
-  ZMIANY v4:
-  1. CURRICULUM TARGET: przez pierwsze N epok target = dilatowana GT (styl Qwena),
-     potem stopniowo zmniejsza kernel → GT (cienkie linie). U-Net uczy się najpierw
-     "refinować kształt" a dopiero potem "ścieńczać" – bez utraty ciągłości.
+Included functionality:
+    - curriculum target: dilated GT early, taper to thin GT
+    - soft Qwen mask as U-Net input during training (clamped sigmoid)
+    - connectivity loss (penalise vessel breaks)
+    - Qwen-guided loss (discourage deleting high-confidence Qwen vessels)
+    - EMA weights, early stopping, threshold search, optional TTA at test
 
-  2. CONNECTIVITY LOSS: dodatkowy term który karze za przerwy w ciągłości.
-     Używa gradientu morfologicznego maski predykcji – nieciągłości = duży gradient.
-
-  3. SOFT MASKA QWENA podczas treningu: zamiast binarnej 0/1 podajemy sigmoid
-     Qwena clampowany do [0.15, 1.0] – U-Net widzi pewność Qwena, słabe naczynia
-     nie znikają z sygnału wejściowego.
-
-  4. QWEN-GUIDED LOSS: dodatkowy term BCE który karze gdy U-Net usuwa to co Qwen
-     był pewny (prob > 0.7) – zapobiega "kasowaniu" ciągłych naczyń.
-
-UŻYCIE:
-    python train_qwen_unet_v4.py \
-        --qwen-ckpt checkpoints/qwen_seg_best_LoRA_deepstack.pth \
+Usage:
+    python qwen_unet_pipeline.py \\
+        --qwen-ckpt checkpoints/qwen_seg_best_LoRA_deepstack.pth \\
         --epochs 50 --batch-size 2
 
-    # Większy encoder
-    python train_qwen_unet_v4.py \
-        --qwen-ckpt checkpoints/qwen_seg_best_LoRA_deepstack.pth \
+    python qwen_unet_pipeline.py \\
+        --qwen-ckpt checkpoints/qwen_seg_best_LoRA_deepstack.pth \\
         --encoder efficientnet-b4 --epochs 50 --batch-size 2
 """
 
@@ -62,7 +53,7 @@ IMAGENET_STD  = (0.229, 0.224, 0.225)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Qwen wrapper (bez zmian)
+# Qwen mask predictor
 # ══════════════════════════════════════════════════════════════════════════════
 
 class QwenMaskPredictor(nn.Module):
@@ -109,7 +100,7 @@ class QwenMaskPredictor(nn.Module):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SegDecoder + DeepStackFusion (bez zmian)
+# SegDecoder + DeepStackFusion
 # ══════════════════════════════════════════════════════════════════════════════
 
 class SegDecoder(nn.Module):
@@ -158,18 +149,14 @@ class DeepStackFusion(nn.Module):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Curriculum dilation — kluczowa zmiana v4
+# Curriculum dilation of GT targets
 # ══════════════════════════════════════════════════════════════════════════════
 
 def get_dilation_kernel_size(epoch: int, total_epochs: int,
                               max_dil: int = 9, min_dil: int = 1) -> int:
     """
-    Curriculum learning dla targetu:
-    - Epoka 1:              kernel = max_dil (np. 9) → target podobny do maski Qwena
-    - Epoka total_epochs:   kernel = min_dil (1) → target = GT (cienkie linie)
-
-    Stopniowe ścieńczanie uczy U-Neta refinować bez przerywania ciągłości.
-    kernel musi być nieparzysty.
+    Curriculum GT dilation: large kernel early (≈ Qwen thickness),
+    shrink toward 1 by the last epoch. Kernel size is always odd.
     """
     progress = (epoch - 1) / max(total_epochs - 1, 1)   # 0.0 → 1.0
     size     = max_dil - progress * (max_dil - min_dil)
@@ -192,7 +179,7 @@ def dilate_mask(mask_bin: np.ndarray, kernel_size: int) -> np.ndarray:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Ładowanie checkpointu Qwena (bez zmian)
+# Load Qwen checkpoint
 # ══════════════════════════════════════════════════════════════════════════════
 
 def load_qwen_predictor(ckpt_path: str, finetune: bool = False) -> QwenMaskPredictor:
@@ -267,8 +254,7 @@ def load_qwen_predictor(ckpt_path: str, finetune: bool = False) -> QwenMaskPredi
 
 class HybridArcadeDataset(Dataset):
     """
-    v4: Dataset przyjmuje `dilation_kernel` który jest aktualizowany przez
-    trening w każdej epoce. Pozwala na curriculum learning targetu.
+    Dataset with a per-epoch `dilation_kernel` for curriculum GT targets.
     """
 
     def __init__(self, split: str, data_root: str, qwen_processor,
@@ -380,7 +366,7 @@ def hybrid_collate_fn(batch):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# U-Net refinement model (bez zmian)
+# U-Net refinement model
 # ══════════════════════════════════════════════════════════════════════════════
 
 def build_unet_refiner(encoder_name: str = "resnet34") -> nn.Module:
@@ -433,7 +419,7 @@ def build_unet_refiner(encoder_name: str = "resnet34") -> nn.Module:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Loss v4 — FocalTversky + Connectivity + QwenGuided
+# Loss: FocalTversky + Connectivity + QwenGuided
 # ══════════════════════════════════════════════════════════════════════════════
 
 class ConnectivityLoss(nn.Module):
@@ -541,7 +527,7 @@ class FocalTverskyLoss(nn.Module):
 
 class CombinedLossV4(nn.Module):
     """
-    Łączny loss v4:
+    Combined loss:
 
       L = w_main * FocalTversky(pred, dilated_GT)
         + w_conn * ConnectivityLoss(pred, qwen_prob)
@@ -600,7 +586,7 @@ class CombinedLossV4(nn.Module):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Metryki (bez zmian)
+# Metrics
 # ══════════════════════════════════════════════════════════════════════════════
 
 def compute_metrics(preds_bin, targets, smooth=1e-6):
@@ -620,7 +606,7 @@ def compute_metrics(preds_bin, targets, smooth=1e-6):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Early stopping (bez zmian)
+# Early stopping
 # ══════════════════════════════════════════════════════════════════════════════
 
 class EarlyStopping:
@@ -640,15 +626,15 @@ class EarlyStopping:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TTA — używa SOFT maski Qwena (zmiana v4)
+# Test-time augmentation
 # ══════════════════════════════════════════════════════════════════════════════
 
 @torch.no_grad()
 def predict_with_tta(qwen, unet, pv, thw, img_un, device, use_tta: bool = True,
                      soft_qwen: bool = False):
     """
-    v4: soft_qwen=True podczas treningu → U-Net widzi pewność Qwena.
-        soft_qwen=False podczas inferencji → binarna maska (jak v3).
+    soft_qwen=True  → pass clamped Qwen probabilities into the U-Net (training).
+    soft_qwen=False → binary Qwen mask (inference).
 
     Soft maska: sigmoid Qwena clampowany do [0.15, 1.0].
     Minimalny clamp 0.15 zapewnia że słabe naczynia nie giną całkowicie.
@@ -660,7 +646,7 @@ def predict_with_tta(qwen, unet, pv, thw, img_un, device, use_tta: bool = True,
         # Soft: zachowaj gradient pewności, minimalny sygnał = 0.15
         qwen_mask = qwen_prob.clamp(0.15, 1.0)
     else:
-        # Binarna: jak v3 (do inferencji)
+        # Binary mask for inference
         qwen_mask = (qwen_prob > 0.5).float()
 
     if not use_tta:
@@ -689,7 +675,7 @@ def predict_with_tta(qwen, unet, pv, thw, img_un, device, use_tta: bool = True,
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Train / eval loops — v4
+# Train / eval loops
 # ══════════════════════════════════════════════════════════════════════════════
 
 def train_epoch(qwen, unet, loader, optimizer, criterion, device, scaler):
@@ -712,14 +698,14 @@ def train_epoch(qwen, unet, loader, optimizer, criterion, device, scaler):
             with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
                 qwen_prob = qwen(pv, thw).to(device).float()
 
-        # ZMIANA v4: soft maska — U-Net widzi pewność Qwena
+        # Soft Qwen mask as extra input channel
         qwen_soft = qwen_prob.clamp(0.15, 1.0).detach()
         unet_input = torch.cat([img_un, qwen_soft], dim=1)
 
         optimizer.zero_grad()
         with torch.autocast(device_type="cuda", dtype=torch.float16):
             logits = unet(unet_input)
-            # ZMIANA v4: target = dilatowana GT, przekazujemy też qwen_prob
+            # Dilated GT target + Qwen probs for guided loss
             loss, parts = criterion(logits, tgt_dil, qwen_prob.detach())
 
         scaler.scale(loss).backward()
@@ -783,7 +769,7 @@ def eval_epoch(qwen, unet, loader, criterion, device,
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Optymalizacja progu (bez zmian)
+# Threshold search on validation
 # ══════════════════════════════════════════════════════════════════════════════
 
 @torch.no_grad()
@@ -819,7 +805,7 @@ def find_best_threshold(qwen, unet, val_loader, device, thresholds=None) -> floa
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Zapis predykcji (bez zmian istotnych)
+# Save prediction panels
 # ══════════════════════════════════════════════════════════════════════════════
 
 @torch.no_grad()
@@ -895,7 +881,7 @@ def save_predictions(qwen, unet, loader, device, out_dir: Path,
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Main — v4 z curriculum
+# Main
 # ══════════════════════════════════════════════════════════════════════════════
 
 def main(args):
@@ -1057,7 +1043,7 @@ def main(args):
                          pred_dir, threshold=best_threshold, n=12)
 
         results = {
-            "model":         f"Qwen3-VL → U-Net v4 ({args.encoder}+scSE+curriculum)",
+            "model":         f"Qwen3-VL → U-Net ({args.encoder}+scSE+curriculum)",
             "dataset":       "ARCADE syntax — binary vessel segmentation",
             "split":         "test",
             "best_val_dice": round(best_val_dice, 4),
@@ -1082,7 +1068,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Qwen3-VL + U-Net refinement v4 — curriculum + connectivity loss"
+        description="Qwen3-VL + U-Net refinement (curriculum + connectivity loss)"
     )
     parser.add_argument("--qwen-ckpt",     required=True)
     parser.add_argument("--encoder",       default="resnet34",

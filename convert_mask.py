@@ -1,42 +1,14 @@
 """
-convert_masks.py
-=================
-Converts ARCADE syntax dataset COCO polygon annotations to binary mask PNGs.
+convert_mask.py
+================
+Convert ARCADE SYNTAX COCO polygons to binary vessel mask PNGs.
 
-What it does:
-  - Reads existing train / val / test splits from ARCADE (no manual splitting needed)
-  - For each image: merges ALL polygon segments into ONE binary mask
-    (vessel = 255, background = 0) — all 26 SYNTAX categories treated as foreground
-  - Saves masks as PNG with identical filename to source image
-  - Generates a few overlay visualizations so you can sanity-check visually
-
-Dataset structure expected:
-    data/
-      syntax/
-        train/
-          images/          <- 1000 XCA frames (512x512 PNG)
-          annotations/
-            train.json     <- COCO format, 26 SYNTAX categories
-        val/
-          images/          <- 200 images
-          annotations/
-            val.json
-        test/
-          images/
-          annotations/
-            test.json
-
-Output:
-    data/
-      masks/
-        train/             <- 1000 binary masks (0/255)
-        val/               <- 200 binary masks
-        test/              <- binary masks
+Merges all polygon categories into one foreground (255) / background (0) mask
+per image. Optional overlay previews with --vis.
 
 Usage:
-    python convert_masks.py
-    python convert_masks.py --vis 8          # generate 8 overlay images
-    python convert_masks.py --data-root /path/to/data
+    python convert_mask.py
+    python convert_mask.py --vis 8 --data-root data
 """
 
 import argparse

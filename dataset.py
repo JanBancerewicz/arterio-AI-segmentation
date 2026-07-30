@@ -3,30 +3,18 @@ dataset.py
 ===========
 PyTorch Dataset for ARCADE syntax coronary vessel segmentation.
 
-Used by:
-    - train_unet.py        (baseline)
-    - train_qwen_seg.py    (main experiment)
-    - evaluate.py          (evaluation)
+Used by train_unet.py, train_qwen_seg_new.py, evaluate.py.
 
-Expected directory structure (after convert_masks.py):
-    data/
-      syntax/
-        train/images/   <- 1000 XCA frames (512x512 grayscale PNG)
-        val/images/     <- 200 XCA frames
-        test/images/    <- test XCA frames
-      masks/
-        train/          <- binary masks (0/255 PNG), same filenames as images
-        val/
-        test/
+Expected layout (after convert_mask.py):
+    data/syntax/{train,val,test}/images/*.png
+    data/masks/{train,val,test}/*.png
 
 Usage:
     from dataset import ArcadeDataset, get_loaders
     from augmentations import get_transforms
 
     train_loader, val_loader, test_loader = get_loaders(
-        data_root="data",
-        batch_size=8,
-        num_workers=4,
+        data_root="data", batch_size=8, num_workers=4,
     )
 """
 
