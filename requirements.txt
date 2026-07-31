@@ -1,32 +1,34 @@
 # ==========================================
-# INSTRUKCJA INSTALACJI:
-# Najpierw wykonaj ręcznie poniższą komendę w terminalu, 
-# aby zainstalować PyTorch z obsługą CUDA:
-# pip install torch==2.9.0 torchvision==0.24.0 torchaudio==2.9.0 --index-url https://download.pytorch.org/whl/cu128
+# PYTORCH INSTALATION (domanually first):
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 # ==========================================
 
-# --- Podstawowe biblioteki naukowe ---
+# --- Podstawowe ---
 numpy>=1.26.0
-pandas>=2.2.0
-scipy                   # Wymagane często przez algorytmy przetwarzania obrazu
+scipy
 
-# --- Wizualizacja i Przetwarzanie Obrazów ---
-matplotlib>=3.8.0
+# --- Obraz ---
 Pillow>=10.3.0
-scikit-image            # Do zaawansowanych operacji na obrazach
-opencv-python           # Do wczytywania i prostych operacji (cv2)
+opencv-python
+scikit-image
+matplotlib>=3.8.0
 
-# --- Ekosystem Hugging Face (VLM/LLM) ---
-transformers>=4.42.0    # Framework do obsługi modelu Qwen
-datasets>=2.18.0        # Zarządzanie danymi (opcjonalne, ale warto mieć)
-accelerate>=0.29.0      # Optymalizacja treningu na GPU
-peft>=0.11.0            # Obsługa LoRA (adapterów)
-bitsandbytes>=0.43.0    # Kwantyzacja 4-bitowa (oszczędność VRAM)
-huggingface_hub         # Do pobierania modeli/zapisywania
+# --- Segmentacja (NOWE) ---
+segmentation-models-pytorch>=0.3.3   # U-Net with encoders (baseline)
+albumentations>=1.4.0                # Medical Image Augmentation
 
-# --- Specyficzne dla Qwen2-VL ---
-qwen-vl-utils           # NIEZBĘDNE: Narzędzia do preprocessingu wizualnego Qwen
+# --- Hugging Face (Qwen3-VL) ---
+transformers>=4.51.0                 # Qwen3-VL (requires the newest version)
+accelerate>=0.29.0
+peft>=0.11.0                        # LoRA
+bitsandbytes>=0.43.0                # QLoRA (option for less-performative GPU)
+huggingface_hub
+datasets>=2.18.0
 
-# --- Narzędzia i Logowanie ---
-tqdm>=4.66.0            # Paski postępu
-tensorboard             # Do śledzenia wykresów straty (Loss) w trakcie treningu
+# --- Qwen VL utils ---
+qwen-vl-utils>=0.0.8                # Qwen Visual Preprocessing
+
+# --- Narzędzia ---
+tqdm>=4.66.0
+tensorboard
+pandas>=2.2.0
