@@ -20,13 +20,13 @@ below documents how we got there, what we changed in the Qwen path, and which of
 ### Authors
 This work was a part of a group project on Gdańsk University of Technology. Tool was created for the Arterio ecosystem (coronary vessel segmentation on XCA).
 
-- Franciszek Borys @
+- Franciszek Borys [@FranBory](https://github.com/FranBory)
 
-- Jan Bancerewicz @
+- Jan Bancerewicz [@JanBancerewicz](https://github.com/JanBancerewicz)
 
-- Julia Augustyniak @
+- Julia Augustyniak [@Julia-A1202](https://github.com/Julia-A1202)
 
-- Patryk Lewandowski @
+- Patryk Lewandowski [@PatrykColo](https://github.com/PatrykColo)
 
 Gdańsk University of Technology, 2026
 
