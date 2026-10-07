@@ -1,0 +1,83 @@
+.settings {
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    background-color: var(--med-bg-surface);
+}
+
+.summary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+}
+
+.summary::-webkit-details-marker {
+    display: none;
+}
+
+.summary::before {
+    content: '▸';
+    color: #64748B;
+    transition: transform 0.2s ease;
+}
+
+.settings[open] .summary::before {
+    transform: rotate(90deg);
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 0 1.25rem 1.25rem;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.fieldHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.value {
+    font-variant-numeric: tabular-nums;
+    color: #3B82F6;
+    font-weight: 600;
+}
+
+.slider {
+    width: 100%;
+    accent-color: #3B82F6;
+}
+
+.help {
+    display: block;
+    font-size: 0.8rem;
+    color: #64748B;
+}
+
+.checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    cursor: pointer;
+}
+
+.checkboxInput {
+    margin: 0.2rem 0 0;
+    accent-color: #3B82F6;
+}
