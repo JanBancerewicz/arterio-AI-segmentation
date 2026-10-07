@@ -1,0 +1,13 @@
+.badge {
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.queued     { background-color: #E2E8F0; color: #334155; }
+.processing { background-color: #FEF3C7; color: #92400E; }
+.completed  { background-color: #D1FAE5; color: #065F46; }
+.failed     { background-color: #FEE2E2; color: #991B1B; }
+.cancelled  { background-color: #F1F5F9; color: #64748B; }

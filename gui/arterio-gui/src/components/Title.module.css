@@ -1,0 +1,6 @@
+.title {
+    text-align: left;
+    font-size: 1.2rem;
+    font-family: 'Rubik', sans-serif;
+    color: var(--med-bg-app);
+}

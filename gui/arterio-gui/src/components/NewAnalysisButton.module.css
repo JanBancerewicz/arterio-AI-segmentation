@@ -1,0 +1,19 @@
+.button {
+    display: block;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    background-color: var(--med-bg-surface);
+    color: #3B82F6;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+}
+
+.button:hover {
+    opacity: 0.9;
+}
+
+.active {
+    outline: 2px solid var(--med-bg-surface);
+    outline-offset: 2px;
+}

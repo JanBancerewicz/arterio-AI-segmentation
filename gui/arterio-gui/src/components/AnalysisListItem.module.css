@@ -1,0 +1,31 @@
+.item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    color: inherit;
+    text-decoration: none;
+}
+
+.item:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+.active {
+    background-color: rgba(255, 255, 255, 0.22);
+}
+
+.filename {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+}
