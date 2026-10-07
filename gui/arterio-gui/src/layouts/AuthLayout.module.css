@@ -1,0 +1,15 @@
+/* AuthLayout.module.css */
+.auth {
+    display: grid;
+    grid-template-rows: 1fr auto;
+    min-height: 100vh;
+}
+
+.card {
+    place-self: center;
+    width: 100%;
+    max-width: 400px;
+    padding: 32px;
+    background: var(--med-bg-surface);
+    border-radius: 12px;
+}
