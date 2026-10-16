@@ -1,9 +1,12 @@
 import styles from './NewAnalysisPage.module.css';
 import {UploadDropzone} from "../components/new-analysis/UploadDropzone.tsx";
 import {ModelPicker} from "../components/new-analysis/ModelPicker.tsx";
-import {AdvancedSettings} from "../components/new-analysis/AdvancedSettings.tsx";
+import {useState} from "react";
 
 export const NewAnalysisPage = () => {
+
+    const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+
     return (
         <div className={styles.page}>
             <header className={styles.header}>
@@ -14,13 +17,12 @@ export const NewAnalysisPage = () => {
             </header>
 
             <form className={styles.form}>
-                <UploadDropzone />
+                <UploadDropzone uploadedFile={uploadedFile} onFileChange={setUploadedFile} />
 
                 <div className={styles.settings}>
                     <ModelPicker />
-                    <AdvancedSettings />
 
-                    <button type="submit" className={styles.submit} disabled>
+                    <button type="submit" className={styles.submit} disabled={!uploadedFile}>
                         Rozpocznij analizę
                     </button>
                     <p className={styles.hint}>
