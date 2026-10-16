@@ -2,10 +2,19 @@ import styles from './NewAnalysisPage.module.css';
 import {UploadDropzone} from "../components/new-analysis/UploadDropzone.tsx";
 import {ModelPicker} from "../components/new-analysis/ModelPicker.tsx";
 import {useState} from "react";
+import {useSegmentationModels} from "../hooks/useSegmentationModels.ts";
 
 export const NewAnalysisPage = () => {
 
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+    const [chosenModelId, setChosenModelId] = useState<string | null>(null);
+
+    const { data: models, isPending, isError, error } = useSegmentationModels();
+
+    const defaultModelId = models?.find(model => model.isDefault)?.id ?? null;
+    const selectedModelId = chosenModelId ?? defaultModelId;
+
+    const canSubmit = uploadedFile !== null && selectedModelId !== null;
 
     return (
         <div className={styles.page}>
@@ -20,9 +29,15 @@ export const NewAnalysisPage = () => {
                 <UploadDropzone uploadedFile={uploadedFile} onFileChange={setUploadedFile} />
 
                 <div className={styles.settings}>
-                    <ModelPicker />
+                    {isPending && <p className={styles.modelsStatus}>Ładowanie modeli…</p> }
+                    {isError && (
+                        <p className={`${styles.modelsStatus} ${styles.modelsError}`} role="alert">
+                            Nie udało się pobrać listy modeli: {error.message}
+                        </p>
+                    )}
+                    {models && <ModelPicker segmentationModels={models} selectedModelId={selectedModelId} onSelect={setChosenModelId} />}
 
-                    <button type="submit" className={styles.submit} disabled={!uploadedFile}>
+                    <button type="submit" className={styles.submit} disabled={!canSubmit}>
                         Rozpocznij analizę
                     </button>
                     <p className={styles.hint}>

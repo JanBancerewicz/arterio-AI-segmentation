@@ -1,44 +1,39 @@
 import styles from './ModelPicker.module.css';
+import type {SegmentationModel} from "../../api/SegmentationModel.ts";
 
-export const ModelPicker = () => {
+type ModelPickerProps = {
+    segmentationModels: SegmentationModel[];
+    selectedModelId: string | null;
+    onSelect: (modelId: string) => void;
+}
+
+export const ModelPicker = (props: ModelPickerProps) => {
     return (
         <fieldset className={styles.picker}>
             <legend className={styles.legend}>Model</legend>
 
             <div className={styles.options}>
-                <label className={styles.card}>
-                    <input type="radio" name="model" value="qwen-unet" defaultChecked className={styles.radio} />
-                    <span className={styles.body}>
-                        <span className={styles.header}>
-                            <span className={styles.name}>Qwen3-VL + U-Net</span>
-                            <span className={styles.version}>v1.0</span>
-                            <span className={styles.tag}>domyślny</span>
+                {props.segmentationModels.map(model => (
+                    <label key={model.id} className={styles.card}>
+                        <input
+                            type="radio"
+                            name="model"
+                            value={model.id}
+                            checked={model.id === props.selectedModelId}
+                            disabled={!model.available}
+                            className={styles.radio}
+                            onChange={() => props.onSelect(model.id)}
+                        />
+                        <span className={styles.body}>
+                            <span className={styles.header}>
+                                <span className={styles.name}>{model.name}</span>
+                                <span className={styles.version}>v{model.version}</span>
+                                {model.isDefault && <span className={styles.tag}>domyślny</span>}
+                            </span>
+                            <span className={styles.description}>{model.description}</span>
                         </span>
-                        <span className={styles.description}>Najdokładniejszy, dłuższy czas przetwarzania.</span>
-                    </span>
-                </label>
-
-                <label className={styles.card}>
-                    <input type="radio" name="model" value="unet" className={styles.radio} />
-                    <span className={styles.body}>
-                        <span className={styles.header}>
-                            <span className={styles.name}>U-Net</span>
-                            <span className={styles.version}>v1.0</span>
-                        </span>
-                        <span className={styles.description}>Lżejszy i szybszy, nieco mniej dokładny.</span>
-                    </span>
-                </label>
-
-                <label className={styles.card}>
-                    <input type="radio" name="model" value="gemma-unet" disabled className={styles.radio} />
-                    <span className={styles.body}>
-                        <span className={styles.header}>
-                            <span className={styles.name}>Gemma + U-Net</span>
-                            <span className={styles.version}>v0.1</span>
-                        </span>
-                        <span className={styles.description}>Chwilowo niedostępny.</span>
-                    </span>
-                </label>
+                    </label>
+                ))}
             </div>
         </fieldset>
     )
