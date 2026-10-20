@@ -6,6 +6,7 @@ export const analysesMock: Analysis[] = [
         filename: 'angio_04.png',
         modelId: 'qwen-lora',
         status: 'processing',
+        processingStage: 'Segmentacja naczyń',
         createdAt: '2026-10-06T17:31:00+02:00',
         width: 512,
         height: 512,

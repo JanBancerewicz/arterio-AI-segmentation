@@ -9,4 +9,6 @@ export type Analysis = {
     width: number;
     height: number;
     errorMessage: string | null;
+    queuePosition?: number | null;
+    processingStage?: string | null;
 }

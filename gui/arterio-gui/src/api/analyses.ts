@@ -4,18 +4,42 @@ import {analysesMock} from "../mocks/Analyses.mock.ts";
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+export class AnalysisNotFoundError extends Error {
+    constructor() {
+        super('Nie znaleziono analizy.');
+    }
+}
+
+const withQueuePosition = (analysis: Analysis): Analysis => ({
+    ...analysis,
+    queuePosition: analysis.status === 'queued'
+        ? analysesMock.filter(item => item.status === 'queued').findIndex(item => item.id === analysis.id) + 1
+        : null,
+});
+
 export const fetchAnalyses = async (): Promise<Analysis[]> => {
     await delay(400);
-    return [...analysesMock].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+    return analysesMock.map(withQueuePosition).sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
 }
 
 export const fetchAnalysis = async (id: string): Promise<Analysis> => {
     await delay(300);
     const analysis = analysesMock.find(analysis => analysis.id === id);
     if (!analysis) {
-        throw new Error('Nie znaleziono analizy.');
+        throw new AnalysisNotFoundError();
     }
-    return {...analysis};
+    return withQueuePosition(analysis);
+}
+
+export const cancelAnalysis = async (id: string): Promise<Analysis> => {
+    await delay(400);
+    const analysis = analysesMock.find(item => item.id === id);
+    if (!analysis) throw new AnalysisNotFoundError();
+    if (analysis.status !== 'queued') {
+        throw new Error('Można anulować tylko analizę oczekującą w kolejce. Odświeżono jej status.');
+    }
+    analysis.status = 'cancelled';
+    return withQueuePosition(analysis);
 }
 
 export const createAnalysis = async (input: CreateAnalysisInput): Promise<Analysis> => {
@@ -36,5 +60,5 @@ export const createAnalysis = async (input: CreateAnalysisInput): Promise<Analys
     bitmap.close();
 
     analysesMock.push(analysis);
-    return analysis;
+    return withQueuePosition(analysis);
 }
