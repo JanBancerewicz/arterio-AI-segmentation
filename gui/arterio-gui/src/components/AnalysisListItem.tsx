@@ -1,24 +1,23 @@
 import {NavLink} from "react-router";
 import styles from './AnalysisListItem.module.css';
-import {StatusBadge, type AnalysisStatus} from "./StatusBadge.tsx";
+import {StatusBadge} from "./StatusBadge.tsx";
+import type {Analysis} from "../api/Analysis.ts";
+import {formatDate} from "../utils/formatDate.ts";
 
 type AnalysisListItemProps = {
-    id: string;
-    filename: string;
-    date: string;
-    status: AnalysisStatus;
+    analysis: Analysis;
 }
 
-export const AnalysisListItem = ({ id, filename, date, status }: AnalysisListItemProps) => {
+export const AnalysisListItem = ({ analysis }: AnalysisListItemProps) => {
     return (
         <NavLink
-            to={`/analyses/${id}`}
+            to={`/analyses/${analysis.id}`}
             className={({ isActive }) => isActive ? `${styles.item} ${styles.active}` : styles.item}
         >
-            <span className={styles.filename} title={filename}>{filename}</span>
+            <span className={styles.filename} title={analysis.filename}>{analysis.filename}</span>
             <span className={styles.meta}>
-                <span>{date}</span>
-                <StatusBadge status={status} />
+                <span>{formatDate(analysis.createdAt)}</span>
+                <StatusBadge status={analysis.status} />
             </span>
         </NavLink>
     )

@@ -1,6 +1,5 @@
 import styles from './StatusBadge.module.css';
-
-export type AnalysisStatus = 'queued' | 'processing' | 'completed' | 'failed' | 'cancelled';
+import type {AnalysisStatus} from "../api/Analysis.ts";
 
 const labels: Record<AnalysisStatus, string> = {
     queued: 'W kolejce',

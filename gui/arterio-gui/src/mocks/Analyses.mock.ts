@@ -1,0 +1,44 @@
+import type {Analysis} from "../api/Analysis.ts";
+
+export const analysesMock: Analysis[] = [
+    {
+        id: '4',
+        filename: 'angio_04.png',
+        modelId: 'qwen-lora',
+        status: 'processing',
+        createdAt: '2026-10-06T17:31:00+02:00',
+        width: 512,
+        height: 512,
+        errorMessage: null,
+    },
+    {
+        id: '3',
+        filename: 'angio_03.png',
+        modelId: 'unet',
+        status: 'completed',
+        createdAt: '2026-10-06T17:11:00+02:00',
+        width: 512,
+        height: 512,
+        errorMessage: null,
+    },
+    {
+        id: '2',
+        filename: 'pacjent_lca_projekcja_rao.png',
+        modelId: 'qwen-lora',
+        status: 'failed',
+        createdAt: '2026-10-06T12:28:00+02:00',
+        width: 1024,
+        height: 1024,
+        errorMessage: 'Przekroczono limit czasu przetwarzania (120 s).',
+    },
+    {
+        id: '1',
+        filename: 'angio_01.png',
+        modelId: 'unet',
+        status: 'completed',
+        createdAt: '2026-10-05T09:02:00+02:00',
+        width: 512,
+        height: 512,
+        errorMessage: null,
+    },
+];
