@@ -4,6 +4,9 @@
     --med-bg-bot: #EEF2F6;
     --med-bg-user: #0056D2;
     --med-text-main: #1E293B;
+    font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-synthesis: none;
+    -webkit-font-smoothing: antialiased;
 }
 
 body {

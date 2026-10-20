@@ -1,7 +1,13 @@
 import styles from './Title.module.css';
 
-export const Title = () => {
-    return <div className={styles.title}>
-        <h2>ARTERIO</h2>
-    </div>
-}
+type TitleProps = {
+    variant?: 'light' | 'dark';
+};
+
+export const Title = ({variant = 'light'}: TitleProps) => {
+    return (
+        <div className={`${styles.title} ${styles[variant]}`}>
+            <h2 className={styles.name}>ARTERIO</h2>
+        </div>
+    );
+};

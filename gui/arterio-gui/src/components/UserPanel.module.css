@@ -1,9 +1,13 @@
+.container {
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.25);
+}
+
 .panel {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
-    padding-top: 1rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.25);
+    gap: 0.75rem;
+    margin-bottom: 0.85rem;
 }
 
 .avatar {
@@ -27,12 +31,18 @@
 }
 
 .name {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 600;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.email {
-    font-size: 0.75rem;
+.caption {
+    margin-bottom: 0.2rem;
+    font-size: 0.65rem;
+    line-height: 1.4;
     opacity: 0.8;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -40,6 +50,33 @@
 }
 
 .logout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    min-height: 36px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 255, 255, 0.08);
     color: inherit;
+    font: inherit;
     font-size: 0.8rem;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.logout:hover:not(:disabled) { background: rgba(255, 255, 255, 0.18); }
+.logout svg { flex-shrink: 0; }
+.error { margin: 0.75rem 0 0; padding: 0.65rem; border-radius: 6px; background: #FEF2F2; color: #991B1B; font-size: 0.8rem; line-height: 1.5; }
+
+.logout:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.logout:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
 }

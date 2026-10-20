@@ -1,15 +1,50 @@
-/* AuthLayout.module.css */
 .auth {
     display: grid;
     grid-template-rows: 1fr auto;
     min-height: 100vh;
+    min-height: 100dvh;
+}
+
+.main {
+    display: grid;
+    place-items: center;
+    padding: 3rem 1.5rem;
 }
 
 .card {
-    place-self: center;
     width: 100%;
-    max-width: 400px;
-    padding: 32px;
+    max-width: 440px;
+    padding: 2.25rem;
     background: var(--med-bg-surface);
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(15, 23, 42, 0.05);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 1.75rem;
+    margin-bottom: 1.75rem;
+    border-bottom: 1px solid #E2E8F0;
+}
+
+.brandIcon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
     border-radius: 12px;
+    background: #3B82F6;
+    color: white;
+}
+
+.brandName { display: block; font-size: 1.1rem; font-weight: 750; letter-spacing: 0.08em; }
+.brandDescription { display: block; margin-top: 0.2rem; color: #64748B; font-size: 0.75rem; line-height: 1.5; }
+
+@media (max-width: 480px) {
+    .main { padding: 1.5rem 1rem; }
+    .card { padding: 1.5rem; }
 }

@@ -1,0 +1,59 @@
+.title { margin: 0 0 0.5rem; font-size: 1.6rem; font-weight: 700; letter-spacing: -0.025em; }
+.subtitle { margin: 0 0 1.75rem; color: #64748B; font-size: 0.9rem; line-height: 1.6; }
+.form { display: flex; flex-direction: column; gap: 1.25rem; }
+.field { display: flex; flex-direction: column; gap: 0.5rem; }
+.field label { font-size: 0.85rem; font-weight: 600; color: #334155; }
+.input {
+    width: 100%;
+    min-width: 0;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid #CBD5E1;
+    border-radius: 8px;
+    background: var(--med-bg-surface);
+    color: var(--med-text-main);
+    font: inherit;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+.input::placeholder { color: #94A3B8; }
+.input:hover:not(:disabled) { border-color: #94A3B8; }
+.input:focus { border-color: #3B82F6; outline: none; box-shadow: 0 0 0 3px #DBEAFE; }
+.input:disabled { background: #F8FAFC; color: #64748B; }
+.passwordField { position: relative; }
+.passwordInput { padding-right: 4.5rem; }
+.passwordToggle {
+    position: absolute;
+    right: 0.4rem;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 0;
+    border-radius: 5px;
+    padding: 0.5rem;
+    background: transparent;
+    color: #2563EB;
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+.passwordToggle:hover:not(:disabled) { background: #EFF6FF; }
+.submit {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border: 0;
+    border-radius: 8px;
+    background: #3B82F6;
+    color: #FFFFFF;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+.submit:hover:not(:disabled) { background: #2563EB; }
+.submit:disabled { background: #94A3B8; cursor: wait; }
+.passwordToggle:disabled { opacity: 0.6; cursor: default; }
+.submit:focus-visible, .passwordToggle:focus-visible { outline: 2px solid #2563EB; outline-offset: 3px; }
+.error { margin: 0; padding: 0.75rem 0.9rem; border: 1px solid #FECACA; border-radius: 8px; background: #FEF2F2; color: #B91C1C; font-size: 0.85rem; line-height: 1.5; }
+.help { margin: 1.75rem 0 0; padding-top: 1.25rem; border-top: 1px solid #E2E8F0; color: #64748B; text-align: center; font-size: 0.75rem; line-height: 1.8; }
