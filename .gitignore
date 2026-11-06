@@ -281,3 +281,6 @@ train_gemma_seg.py
 # results/unet_baseline_full_50ep.json
 # results/unet_metrics.json
 # results/unet_smoke_test_2epoch.json
+
+# Local backend files when running outside Docker
+backend/storage/

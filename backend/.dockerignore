@@ -1,0 +1,11 @@
+*
+!requirements.lock
+!requirements-dev.lock
+!app/
+!app/**
+!tests/
+!tests/**
+!scripts/
+!scripts/**
+**/__pycache__/
+**/*.pyc

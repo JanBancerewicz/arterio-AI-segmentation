@@ -1,0 +1,74 @@
+name: arterio-smoke
+
+x-backend: &backend
+  image: arterio-backend:smoke
+  environment:
+    DATABASE_URL: postgresql://arterio:arterio@db:5432/arterio
+    STORAGE_DIR: /var/lib/arterio
+  volumes:
+    - analysis-files:/var/lib/arterio
+  init: true
+
+services:
+  db:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_DB: arterio
+      POSTGRES_USER: arterio
+      POSTGRES_PASSWORD: arterio
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U arterio -d arterio']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+  migrate:
+    <<: *backend
+    command: [python, -m, app.migrate]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api:
+    <<: *backend
+    build:
+      context: ./backend
+      target: runtime
+    ports:
+      - '127.0.0.1:8000:8000'
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health', timeout=3)"]
+      interval: 5s
+      timeout: 4s
+      retries: 10
+    restart: unless-stopped
+
+  worker:
+    <<: *backend
+    command: [python, -m, app.worker]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  tests:
+    image: arterio-backend:tests
+    build:
+      context: ./backend
+      target: tests
+    environment:
+      DATABASE_URL: postgresql://arterio:arterio@db:5432/arterio
+    profiles: [test]
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
+  analysis-files:
