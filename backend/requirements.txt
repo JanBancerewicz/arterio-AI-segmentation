@@ -4,3 +4,4 @@ psycopg[binary]>=3.2,<4
 Pillow>=12,<13
 python-multipart>=0.0.20,<1
 uvicorn>=0.34,<1
+argon2-cffi>=25.1,<26
