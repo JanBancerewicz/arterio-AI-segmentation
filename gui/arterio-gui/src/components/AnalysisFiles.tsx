@@ -10,13 +10,17 @@ const labels: Record<AnalysisFileKind, string> = {
 };
 
 export const AnalysisFiles = ({analysis}: {analysis: Analysis}) => {
-    const [kind, setKind] = useState<AnalysisFileKind>('original');
+    const [kind, setKind] = useState<AnalysisFileKind | null>(null);
     const available = (['original', 'mask', 'overlay'] as const)
         .filter(item => item === 'original' || (analysis.status === 'completed' && analysis.files[item]));
-    const selected = available.includes(kind) ? kind : 'original';
+    const selected = kind && available.includes(kind) ? kind
+        : available.includes('overlay') ? 'overlay' : 'original';
 
     return <section className={styles.card} aria-labelledby="analysis-image-heading">
         <h2 id="analysis-image-heading">Obraz i wynik</h2>
+        {analysis.modelId === 'smoke-test' && <p className={styles.testNotice}>
+            Wynik testowy — progowanie jasności. To nie jest segmentacja naczyń przez model AI.
+        </p>}
         <div className={styles.controls} role="group" aria-label="Wybór obrazu">
             {available.map(item => <button key={item} type="button"
                 className={styles.button} aria-pressed={selected === item}
@@ -65,6 +69,7 @@ const FilePreview = ({analysis, kind}: {analysis: Analysis; kind: AnalysisFileKi
     });
 
     return <div>
+        <div className={styles.viewport} aria-busy={image.isPending}>
         {image.isPending && <p role="status">Ładowanie obrazu…</p>}
         {image.isError && <div role="alert">
             <p>{image.error.message}</p>
@@ -72,13 +77,16 @@ const FilePreview = ({analysis, kind}: {analysis: Analysis; kind: AnalysisFileKi
                 onClick={() => void image.refetch()}>Spróbuj ponownie</button>
         </div>}
         {decodeError && <p role="alert">Nie można wyświetlić obrazu. Możesz spróbować pobrać plik.</p>}
-        <img ref={imageRef} className={styles.image} hidden={!image.data || decodeError}
+        <img ref={imageRef} className={kind === 'mask' ? `${styles.image} ${styles.mask}` : styles.image} hidden={!image.data || decodeError}
             alt={`${labels[kind]} — ${analysis.filename}`} onError={() => setDecodeError(true)}
             onLoad={() => setDecodeError(false)} />
+        </div>
+        <div className={styles.fileActions}>
         <button className={styles.button} disabled={download.isPending}
             onClick={() => download.mutate()}>
             {download.isPending ? 'Pobieranie…' : `Pobierz PNG: ${labels[kind]}`}
         </button>
         {download.isError && <p role="alert">{download.error.message}</p>}
+        </div>
     </div>;
 };

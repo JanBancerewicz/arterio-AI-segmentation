@@ -1,6 +1,6 @@
 .card {
-    margin-top: 1.5rem;
-    padding: 1.5rem;
+    min-width: 0;
+    padding: 1rem;
     border: 1px solid #E2E8F0;
     border-radius: 12px;
     background: var(--med-bg-surface);
@@ -19,5 +19,34 @@
 .button[aria-pressed="true"] { background: #EFF6FF; border-color: #2563EB; color: #1D4ED8; }
 .button:disabled { opacity: 0.6; cursor: not-allowed; }
 .button:focus-visible { outline: 2px solid #2563EB; outline-offset: 3px; }
-.image { display: block; max-width: 100%; max-height: 65vh; margin: 1rem auto; object-fit: contain; }
+.viewport {
+    display: grid;
+    place-items: center;
+    min-height: clamp(280px, calc(100dvh - 22rem), 800px);
+    padding: 1rem;
+    border-radius: 8px;
+    background: #0F172A;
+    color: #F1F5F9;
+    overflow: auto;
+}
+.viewport > div { text-align: center; }
+.viewport p { max-width: 40rem; overflow-wrap: anywhere; }
+.image {
+    display: block;
+    width: 100%;
+    height: clamp(280px, calc(100dvh - 22rem), 800px);
+    object-fit: contain;
+}
+.mask { image-rendering: pixelated; }
 .image[hidden] { display: none; }
+.fileActions { margin-top: 1rem; }
+.testNotice {
+    margin: 0 0 1rem;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #FCD34D;
+    border-radius: 8px;
+    background: #FFFBEB;
+    color: #92400E;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}

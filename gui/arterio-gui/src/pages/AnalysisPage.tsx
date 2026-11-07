@@ -66,64 +66,66 @@ const AnalysisDetails = ({id}: {id: string}) => {
         </div>}
 
         <div className={styles.grid}>
-            <section className={styles.card} aria-labelledby="analysis-status-heading">
-                <h2 id="analysis-status-heading">Status analizy</h2>
-                <div role="status" aria-live="polite" aria-atomic="true">
-                    {analysis.status === 'queued' && <>
-                        <p>Analiza oczekuje na rozpoczęcie przetwarzania.</p>
-                        <p className={styles.detail}>Pozycja w kolejce: <strong>{analysis.queuePosition ?? 'Oczekiwanie na informację'}</strong></p>
-                    </>}
-                    {analysis.status === 'processing' && <>
-                        <p>Trwa przetwarzanie obrazu.</p>
-                        <p className={styles.detail}>Etap: <strong>{analysis.processingStage ? stageNames[analysis.processingStage] : 'Oczekiwanie na informację o etapie'}</strong></p>
-                    </>}
-                    {analysis.status === 'completed' && <>
-                        <p>Analiza została zakończona.</p>
-                    </>}
-                    {analysis.status === 'failed' && <>
-                        <p>Nie udało się ukończyć analizy.</p>
-                        <p className={styles.error}>{analysis.errorMessage || 'Nie podano przyczyny błędu przetwarzania.'}</p>
-                    </>}
-                    {analysis.status === 'cancelled' && <p>Analiza została anulowana i nie będzie przetwarzana.</p>}
-                </div>
-                {active && <p className={styles.hint}>Status aktualizuje się automatycznie. Możesz przejść do innej analizy i wrócić tutaj z historii.</p>}
-                {analysis.status === 'queued' && <button
-                    className={styles.button}
-                    disabled={cancellation.isPending}
-                    onClick={() => cancellation.mutate()}
-                >{cancellation.isPending ? 'Anulowanie…' : 'Anuluj zadanie'}</button>}
-                {cancellation.isError && <p className={styles.error} role="alert">{cancellation.error.message}</p>}
-            </section>
+            <AnalysisFiles analysis={analysis} />
+            <aside className={styles.sidePanel} aria-label="Szczegóły i działania analizy">
+                <section className={styles.card} aria-labelledby="analysis-status-heading">
+                    <h2 id="analysis-status-heading">Status analizy</h2>
+                    <div role="status" aria-live="polite" aria-atomic="true">
+                        {analysis.status === 'queued' && <>
+                            <p>Analiza oczekuje na rozpoczęcie przetwarzania.</p>
+                            <p className={styles.detail}>Pozycja w kolejce: <strong>{analysis.queuePosition ?? 'Oczekiwanie na informację'}</strong></p>
+                        </>}
+                        {analysis.status === 'processing' && <>
+                            <p>Trwa przetwarzanie obrazu.</p>
+                            <p className={styles.detail}>Etap: <strong>{analysis.processingStage ? stageNames[analysis.processingStage] : 'Oczekiwanie na informację o etapie'}</strong></p>
+                        </>}
+                        {analysis.status === 'completed' && <>
+                            <p>Analiza została zakończona.</p>
+                        </>}
+                        {analysis.status === 'failed' && <>
+                            <p>Nie udało się ukończyć analizy.</p>
+                            <p className={styles.error}>{analysis.errorMessage || 'Nie podano przyczyny błędu przetwarzania.'}</p>
+                        </>}
+                        {analysis.status === 'cancelled' && <p>Analiza została anulowana i nie będzie przetwarzana.</p>}
+                    </div>
+                    {active && <p className={styles.hint}>Status aktualizuje się automatycznie. Możesz przejść do innej analizy i wrócić tutaj z historii.</p>}
+                    {analysis.status === 'queued' && <button
+                        className={styles.button}
+                        disabled={cancellation.isPending}
+                        onClick={() => cancellation.mutate()}
+                    >{cancellation.isPending ? 'Anulowanie…' : 'Anuluj zadanie'}</button>}
+                    {cancellation.isError && <p className={styles.error} role="alert">{cancellation.error.message}</p>}
+                </section>
 
-            <section className={styles.card} aria-labelledby="analysis-info-heading">
-                <h2 id="analysis-info-heading">Informacje o analizie</h2>
-                <dl className={styles.metadata}>
-                    <div><dt>Plik</dt><dd>{analysis.filename}</dd></div>
-                    <div><dt>Rozdzielczość</dt><dd>{analysis.width} × {analysis.height} px</dd></div>
-                    <div><dt>Model</dt><dd>{analysis.modelName} · {analysis.modelVersion}</dd></div>
-                    <div><dt>Utworzono</dt><dd>{formatDate(analysis.createdAt)}</dd></div>
-                    {analysis.finishedAt && <div><dt>Zakończono</dt><dd>{formatDate(analysis.finishedAt)}</dd></div>}
-                    {analysis.processingMs !== null && <div><dt>Czas przetwarzania</dt><dd>{(analysis.processingMs / 1000).toFixed(2)} s</dd></div>}
-                </dl>
-            </section>
+                <section className={styles.card} aria-labelledby="analysis-info-heading">
+                    <h2 id="analysis-info-heading">Informacje o analizie</h2>
+                    <dl className={styles.metadata}>
+                        <div><dt>Plik</dt><dd>{analysis.filename}</dd></div>
+                        <div><dt>Rozdzielczość</dt><dd>{analysis.width} × {analysis.height} px</dd></div>
+                        <div><dt>Model</dt><dd>{analysis.modelName} · {analysis.modelVersion}</dd></div>
+                        <div><dt>Utworzono</dt><dd>{formatDate(analysis.createdAt)}</dd></div>
+                        {analysis.finishedAt && <div><dt>Zakończono</dt><dd>{formatDate(analysis.finishedAt)}</dd></div>}
+                        {analysis.processingMs !== null && <div><dt>Czas przetwarzania</dt><dd>{(analysis.processingMs / 1000).toFixed(2)} s</dd></div>}
+                    </dl>
+                </section>
+                {!active && <section className={styles.deleteSection} aria-label="Usuwanie analizy">
+                    {!confirmDelete ? <button className={styles.button} onClick={() => setConfirmDelete(true)}>
+                        Usuń analizę
+                    </button> : <div>
+                        <p>Usunąć analizę „{analysis.filename}” i wszystkie jej pliki? Tej operacji nie można cofnąć.</p>
+                        <div className={styles.actions}>
+                            <button className={styles.button} disabled={deletion.isPending}
+                                onClick={() => deletion.mutate(undefined, {onSuccess: () => navigate('/', {replace: true})})}>
+                                {deletion.isPending ? 'Usuwanie…' : 'Usuń analizę i pliki'}
+                            </button>
+                            <button className={styles.button} disabled={deletion.isPending}
+                                onClick={() => setConfirmDelete(false)}>Zachowaj analizę</button>
+                        </div>
+                    </div>}
+                    {deletion.isError && <p className={styles.error} role="alert">{deletion.error.message}</p>}
+                </section>}
+            </aside>
         </div>
-        <AnalysisFiles analysis={analysis} />
-        {!active && <section className={styles.deleteSection} aria-label="Usuwanie analizy">
-            {!confirmDelete ? <button className={styles.button} onClick={() => setConfirmDelete(true)}>
-                Usuń analizę
-            </button> : <div>
-                <p>Usunąć analizę „{analysis.filename}” i wszystkie jej pliki? Tej operacji nie można cofnąć.</p>
-                <div className={styles.actions}>
-                    <button className={styles.button} disabled={deletion.isPending}
-                        onClick={() => deletion.mutate(undefined, {onSuccess: () => navigate('/', {replace: true})})}>
-                        {deletion.isPending ? 'Usuwanie…' : 'Usuń analizę i pliki'}
-                    </button>
-                    <button className={styles.button} disabled={deletion.isPending}
-                        onClick={() => setConfirmDelete(false)}>Zachowaj analizę</button>
-                </div>
-            </div>}
-            {deletion.isError && <p className={styles.error} role="alert">{deletion.error.message}</p>}
-        </section>}
         <Link className={styles.link} to="/">Przejdź do nowej analizy</Link>
     </section>;
 };
