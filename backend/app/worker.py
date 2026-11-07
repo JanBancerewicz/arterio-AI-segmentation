@@ -24,14 +24,14 @@ def claim_job(worker_id):
             """UPDATE analyses SET status = 'failed', error_code = 'TIMEOUT',
                error_message = 'Przetwarzanie zostało przerwane lub przekroczyło limit czasu.',
                finished_at = clock_timestamp(), processing_stage = NULL
-               WHERE status = 'processing'
+               WHERE status = 'processing' AND user_id IS NOT NULL
                AND started_at < clock_timestamp() - (%s * interval '1 second')""",
             (JOB_TIMEOUT_SECONDS,),
         )
         return conn.execute(
             """UPDATE analyses SET status = 'processing', started_at = clock_timestamp(),
                processing_stage = 'preprocessing', worker_id = %s
-               WHERE id = (SELECT id FROM analyses WHERE status = 'queued'
+               WHERE id = (SELECT id FROM analyses WHERE status = 'queued' AND user_id IS NOT NULL
                            ORDER BY created_at, id FOR UPDATE SKIP LOCKED LIMIT 1)
                RETURNING *""", (worker_id,),
         ).fetchone()

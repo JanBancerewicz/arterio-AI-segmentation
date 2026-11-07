@@ -1,4 +1,4 @@
-"""Authentication endpoints. Ownership of analyses is added in step 3."""
+"""Authentication endpoints and shared session dependencies."""
 from datetime import datetime, timezone
 from math import ceil
 from typing import Annotated
@@ -38,12 +38,12 @@ def clear_session_cookie(response: Response) -> None:
     )
 
 
-def require_user(response: Response, token: Annotated[str | None, Depends(cookie)]) -> PublicUser:
-    """Reusable dependency; step 3 will also apply it to analyses and files."""
+def require_user(request: Request, token: Annotated[str | None, Depends(cookie)]) -> PublicUser:
+    """Authenticate and let the HTTP middleware refresh every response type."""
     session = sessions.current_session(token)
     if not session:
         raise ApiError(401, "UNAUTHENTICATED", "Sesja wygasła lub użytkownik nie jest zalogowany.")
-    set_session_cookie(response, session)
+    request.state.auth_session = session
     return session.user
 
 

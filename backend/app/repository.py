@@ -5,7 +5,7 @@ def serialize(conn, row):
     position = None
     if row["status"] == "queued":
         position = max(1, conn.execute(
-            """SELECT count(*) AS n FROM analyses WHERE status = 'queued'
+            """SELECT count(*) AS n FROM analyses WHERE status = 'queued' AND user_id IS NOT NULL
                AND (created_at, id) <= (%s, %s)""",
             (row["created_at"], row["id"]),
         ).fetchone()["n"])
