@@ -6,7 +6,7 @@ export const sessionKey = ['session'] as const;
 export const useSession = () => {
     return useQuery({
         queryKey: sessionKey,
-        queryFn: getSession,
+        queryFn: ({signal}) => getSession(signal),
         retry: 1,
     });
 };

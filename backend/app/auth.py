@@ -19,7 +19,8 @@ cookie = APIKeyCookie(name=config.SESSION_COOKIE_NAME, auto_error=False)
 
 def same_origin(request: Request) -> None:
     origin = request.headers.get("origin")
-    if request.headers.get("sec-fetch-site") == "cross-site" or (origin is not None and origin != config.APP_ORIGIN):
+    allowed = origin == config.APP_ORIGIN or origin in config.APP_EXTRA_ORIGINS
+    if request.headers.get("sec-fetch-site") == "cross-site" or (origin is not None and not allowed):
         raise ApiError(403, "FORBIDDEN_ORIGIN", "Żądanie pochodzi z niedozwolonego źródła.")
 
 

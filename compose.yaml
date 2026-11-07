@@ -6,6 +6,7 @@ x-backend: &backend
     DATABASE_URL: postgresql://arterio:arterio@db:5432/arterio
     STORAGE_DIR: /var/lib/arterio
     APP_ORIGIN: ${APP_ORIGIN:-http://localhost:8000}
+    APP_EXTRA_ORIGINS: ${APP_EXTRA_ORIGINS-http://localhost:5173}
     SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
     JOB_TIMEOUT_SECONDS: ${JOB_TIMEOUT_SECONDS:-120}
     CHECKPOINT_DIR: /models

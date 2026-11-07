@@ -36,6 +36,9 @@ WORKER_HEARTBEAT_SECONDS = 2
 WORKER_STALE_SECONDS = 10
 
 APP_ORIGIN = os.environ.get("APP_ORIGIN", "http://localhost:8000").rstrip("/")
+APP_EXTRA_ORIGINS = frozenset(
+    origin.strip().rstrip("/") for origin in os.environ.get("APP_EXTRA_ORIGINS", "").split(",") if origin.strip()
+)
 SESSION_COOKIE_NAME = "arterio_session"
 SESSION_COOKIE_PATH = "/api"
 _cookie_secure = os.environ.get("SESSION_COOKIE_SECURE", "false").lower()

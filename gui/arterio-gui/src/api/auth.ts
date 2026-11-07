@@ -1,3 +1,5 @@
+import {ApiError, apiRequest} from './client.ts';
+
 export type User = {
     id: string;
     username: string;
@@ -10,33 +12,22 @@ type LoginInput = {
 }
 
 export const login = async (input: LoginInput): Promise<User> => {
-    await new Promise(resolve => setTimeout(resolve, 600));
-
-    //mock for now
-    if (
-        input.username !== 'demo' ||
-        input.password !== 'demo'
-    ) {
-        throw new Error('Nieprawidłowy identyfikator lub hasło.');
-    }
-
-    currentUser = {
-        id: 'demouser',
-        username: 'demo',
-        displayName: 'Użytkownik Demonstracyjny',
-    }
-
-    return {...currentUser};
+    return apiRequest<User>('/auth/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(input),
+    });
 }
 
 export const logout = async (): Promise<void> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-
-    currentUser = null;
+    return apiRequest<void>('/auth/logout', {method: 'POST'});
 };
 
-let currentUser: User | null = null;
-
-export const getSession = async (): Promise<User | null> => {
-    return currentUser ? {...currentUser} : null;
+export const getSession = async (signal?: AbortSignal): Promise<User | null> => {
+    try {
+        return await apiRequest<User>('/auth/me', {signal});
+    } catch (error) {
+        if (error instanceof ApiError && error.status === 401 && error.code === 'UNAUTHENTICATED') return null;
+        throw error;
+    }
 };
