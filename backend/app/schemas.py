@@ -43,8 +43,8 @@ class Analysis(ApiModel):
     id: UUID
     filename: str
     model_id: str
-    model_name: str = "Test infrastruktury — bez modelu AI"
-    model_version: str = "0.1.0"
+    model_name: str
+    model_version: str
     status: Literal["queued", "processing", "completed", "failed", "cancelled"]
     created_at: datetime
     started_at: datetime | None

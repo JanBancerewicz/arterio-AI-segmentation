@@ -1,4 +1,6 @@
 import os
+import math
+import re
 from pathlib import Path
 
 DATABASE_URL = os.environ.get(
@@ -7,6 +9,15 @@ DATABASE_URL = os.environ.get(
 STORAGE_DIR = Path(os.environ.get("STORAGE_DIR", "backend/storage")).resolve()
 MAX_FILE_BYTES = 10 * 1024 * 1024
 MODEL_ID = "smoke-test"
+CHECKPOINT_DIR = Path(os.environ.get("CHECKPOINT_DIR", "checkpoints")).resolve()
+UNET_CHECKPOINT_PATH = Path(os.environ.get("UNET_CHECKPOINT_PATH", str(CHECKPOINT_DIR / "unet_best.pth"))).resolve()
+UNET_MODEL_VERSION = os.environ.get("UNET_MODEL_VERSION", "unversioned")
+UNET_DEVICE = os.environ.get("UNET_DEVICE", "cpu")
+if not re.fullmatch(r"cpu|cuda(?::[0-9]+)?", UNET_DEVICE):
+    raise ValueError("UNET_DEVICE must be cpu, cuda or cuda:N")
+UNET_THRESHOLD = float(os.environ.get("UNET_THRESHOLD", "0.5"))
+if not math.isfinite(UNET_THRESHOLD) or not 0 < UNET_THRESHOLD < 1:
+    raise ValueError("UNET_THRESHOLD must be between 0 and 1")
 JOB_TIMEOUT_SECONDS = int(os.environ.get("JOB_TIMEOUT_SECONDS", "120"))
 if JOB_TIMEOUT_SECONDS < 1:
     raise ValueError("JOB_TIMEOUT_SECONDS must be positive")

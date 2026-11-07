@@ -1,0 +1,9 @@
+# Optional override: docker compose -f compose.yaml -f compose.gpu.yaml up -d --build
+services:
+  worker:
+    build:
+      args:
+        TORCH_INDEX_URL: https://download.pytorch.org/whl/cu128
+    environment:
+      UNET_DEVICE: cuda:0
+    gpus: all

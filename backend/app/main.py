@@ -12,13 +12,14 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
 from PIL import Image, UnidentifiedImageError
 
-from .config import MAX_FILE_BYTES, MODEL_ID, STORAGE_DIR, WORKER_STALE_SECONDS
+from .config import MAX_FILE_BYTES, STORAGE_DIR, WORKER_STALE_SECONDS
 from .auth import clear_session_cookie, require_user, router as auth_router, same_origin, set_session_cookie
 from .db import connect
 from .errors import ApiError
 from .repository import serialize
 from .schemas import Analysis, AnalysisPage, ErrorResponse, PublicUser, SegmentationModel
 from .worker_monitor import monitor_lifetime
+from .models import UNET_ID, catalogue, find_model
 
 CurrentUser = Annotated[PublicUser, Depends(require_user)]
 AUTH_ERRORS = {401: {"model": ErrorResponse, "description": "UNAUTHENTICATED"}}
@@ -36,7 +37,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Arterio — infrastructure prototype",
     version="0.3.0",
-    description="Local smoke-test API with sessions and owner-only analyses. No AI inference; production hardening is incomplete.",
+    description="Local API with sessions, owner-only analyses and optional U-Net inference. Production hardening is incomplete.",
     lifespan=lifespan,
 )
 app.include_router(auth_router)
@@ -96,11 +97,11 @@ def health():
 
 @app.get("/api/v1/models", response_model=list[SegmentationModel], responses=AUTH_ERRORS)
 def models(user: CurrentUser):
-    return [SegmentationModel(
-        id=MODEL_ID, name="Test infrastruktury — bez modelu AI", version="0.1.0",
-        description="Próbny worker progowania obrazu. Wynik nie jest segmentacją naczyń.",
-        is_default=True, available=True,
-    )]
+    entries = catalogue()
+    default = next((model.id for model in entries if model.id == UNET_ID and model.available), entries[0].id)
+    return [SegmentationModel(id=model.id, name=model.name, version=model.version,
+                              description=model.description, is_default=model.id == default,
+                              available=model.available) for model in entries]
 
 
 @app.post("/api/v1/analyses", status_code=201, response_model=Analysis,
@@ -109,8 +110,11 @@ def models(user: CurrentUser):
           })
 def create_analysis(user: CurrentUser, response: Response, file: Annotated[UploadFile, File()],
                     model_id: Annotated[str, Form(alias="modelId")]):
-    if model_id != MODEL_ID:
+    model = find_model(model_id)
+    if model is None:
         raise ApiError(422, "MODEL_NOT_FOUND", "Nieznany model.")
+    if not model.available:
+        raise ApiError(503, "MODEL_UNAVAILABLE", "Model jest niedostępny. Brakuje skonfigurowanego checkpointu.")
     data = file.file.read(MAX_FILE_BYTES + 1)
     if len(data) > MAX_FILE_BYTES:
         raise ApiError(413, "FILE_TOO_LARGE", "Maksymalny rozmiar pliku to 10 MiB.")
@@ -141,9 +145,9 @@ def create_analysis(user: CurrentUser, response: Response, file: Annotated[Uploa
         (folder / "original.png").write_bytes(data)
         with connect() as conn:
             row = conn.execute(
-                """INSERT INTO analyses (id, user_id, filename, model_id, status, width, height)
-                   VALUES (%s, %s, %s, %s, 'queued', %s, %s) RETURNING *""",
-                (analysis_id, user.id, filename, model_id, width, height),
+                """INSERT INTO analyses (id, user_id, filename, model_id, model_name, model_version, status, width, height)
+                   VALUES (%s, %s, %s, %s, %s, %s, 'queued', %s, %s) RETURNING *""",
+                (analysis_id, user.id, filename, model_id, model.name, model.version, width, height),
             ).fetchone()
             result = serialize(conn, row)
     except Exception:

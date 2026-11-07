@@ -8,8 +8,11 @@ from uuid import uuid4
 
 from PIL import Image, ImageOps
 
+from . import config
 from .config import JOB_TIMEOUT_SECONDS, STORAGE_DIR, WORKER_HEARTBEAT_SECONDS
-from .execution import JobExecutor
+from .execution import ComputationFailed, JobExecutor
+from .inference import ModelLoadError
+from .models import UNET_ID
 from .worker_monitor import fail_job, heartbeat, monitoring_connection, recover_jobs, unregister
 
 log = logging.getLogger(__name__)
@@ -49,12 +52,40 @@ def run_smoke_inference(row, worker_id):
     set_stage(row["id"], worker_id, "inference")
     mask = grayscale.point(lambda value: 255 if value >= 128 else 0)
     set_stage(row["id"], worker_id, "postprocessing")
+    save_result(folder, image, mask)
+
+
+def save_result(folder, image, mask):
     tint = Image.new("RGB", image.size, (255, 0, 0))
     overlay = Image.composite(Image.blend(image, tint, 0.5), image, mask)
     for kind, result in (("mask", mask), ("overlay", overlay)):
         temporary = folder / f"{kind}.tmp"
         result.save(temporary, format="PNG")
         temporary.replace(folder / f"{kind}.png")
+
+
+def run_inference(row, worker_id):
+    if row["model_id"] == config.MODEL_ID:
+        return run_smoke_inference(row, worker_id)
+    if row["model_id"] != UNET_ID:
+        raise ModelLoadError("Unknown model assigned to worker")
+    if row["model_version"] != config.UNET_MODEL_VERSION:
+        raise ModelLoadError("Queued model version differs from the worker configuration")
+    try:
+        from .unet import get_segmenter
+    except ImportError as exc:
+        raise ModelLoadError("U-Net dependencies are missing from the worker image") from exc
+    folder = STORAGE_DIR / str(row["id"])
+    segmenter = get_segmenter(str(config.UNET_CHECKPOINT_PATH), row["model_version"],
+                              config.UNET_DEVICE, config.UNET_THRESHOLD)
+    tensor, size = segmenter.preprocess(folder / "original.png")
+    set_stage(row["id"], worker_id, "inference")
+    mask = segmenter.predict(tensor)
+    set_stage(row["id"], worker_id, "postprocessing")
+    mask = segmenter.restore_mask(mask, size)
+    with Image.open(folder / "original.png") as source:
+        image = source.convert("RGB")
+    save_result(folder, image, mask)
 
 
 def owned_job(analysis_id, worker_id):
@@ -98,8 +129,8 @@ def process_job(row, worker_id, executor=None, stop_event=None):
                     return
                 next_heartbeat = monotonic() + WORKER_HEARTBEAT_SECONDS
             result = executor.result(min(0.2, max(0, deadline - monotonic())))
-            if result == "error":
-                raise ChildProcessError("Computation failed")
+            if isinstance(result, tuple) and result[0] == "error":
+                raise ComputationFailed(result[1])
             if result == "ok":
                 break
         if stop_event.is_set():
@@ -125,6 +156,11 @@ def process_job(row, worker_id, executor=None, stop_event=None):
             code, message = "TIMEOUT", "Przekroczono limit czasu przetwarzania."
         elif isinstance(exc, WorkerStopped):
             code, message = "WORKER_LOST", "Worker został zatrzymany podczas przetwarzania."
+        elif isinstance(exc, ComputationFailed):
+            code = exc.code
+            message = {"MODEL_LOAD_FAILED": "Nie udało się załadować skonfigurowanego modelu.",
+                       "OUT_OF_MEMORY": "Zabrakło pamięci GPU podczas przetwarzania.",
+                       "INFERENCE_FAILED": "Proces obliczeniowy nie ukończył przetwarzania."}[code]
         elif isinstance(exc, ChildProcessError):
             code, message = "INFERENCE_FAILED", "Proces obliczeniowy nie ukończył przetwarzania."
         else:
@@ -143,7 +179,7 @@ def main():
     executor = JobExecutor(STORAGE_DIR)
     for sig in (signal.SIGINT, signal.SIGTERM):
         signal.signal(sig, lambda *_: stop.set())
-    log.info("Starting SMOKE-TEST worker %s (no AI model)", worker_id)
+    log.info("Starting worker %s (smoke-test and optional U-Net)", worker_id)
     try:
         while not stop.is_set():
             try:

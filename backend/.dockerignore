@@ -1,6 +1,7 @@
 *
 !requirements.lock
 !requirements-dev.lock
+!requirements-inference.txt
 !app/
 !app/**
 !tests/

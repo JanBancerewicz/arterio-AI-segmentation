@@ -8,21 +8,30 @@ from . import db
 log = logging.getLogger(__name__)
 
 
+class ComputationFailed(ChildProcessError):
+    def __init__(self, code):
+        self.code = code
+        super().__init__(code)
+
+
 def _execute_loop(connection, database_url, storage_dir, task):
     from . import worker
 
     db.DATABASE_URL = database_url
     worker.STORAGE_DIR = Path(storage_dir)
-    run = task or worker.run_smoke_inference
+    run = task or worker.run_inference
     try:
         while True:
             row, worker_id = connection.recv()
             try:
                 run(row, worker_id)
                 connection.send("ok")
-            except Exception:
+            except Exception as exc:
                 log.exception("Computation failed for analysis %s", row["id"])
-                connection.send("error")
+                code = getattr(exc, "code", "INFERENCE_FAILED")
+                if code not in {"MODEL_LOAD_FAILED", "OUT_OF_MEMORY", "INFERENCE_FAILED"}:
+                    code = "INFERENCE_FAILED"
+                connection.send(("error", code))
     except (EOFError, BrokenPipeError):
         pass
     finally:

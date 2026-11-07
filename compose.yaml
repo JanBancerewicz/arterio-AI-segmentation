@@ -8,8 +8,14 @@ x-backend: &backend
     APP_ORIGIN: ${APP_ORIGIN:-http://localhost:8000}
     SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
     JOB_TIMEOUT_SECONDS: ${JOB_TIMEOUT_SECONDS:-120}
+    CHECKPOINT_DIR: /models
+    UNET_CHECKPOINT_PATH: ${UNET_CHECKPOINT_PATH:-/models/unet_best.pth}
+    UNET_MODEL_VERSION: ${UNET_MODEL_VERSION:-unversioned}
+    UNET_DEVICE: ${UNET_DEVICE:-cpu}
+    UNET_THRESHOLD: ${UNET_THRESHOLD:-0.5}
   volumes:
     - analysis-files:/var/lib/arterio
+    - ./checkpoints:/models:ro
   init: true
 
 services:
@@ -54,6 +60,10 @@ services:
 
   worker:
     <<: *backend
+    image: arterio-worker:unet
+    build:
+      context: ./backend
+      target: worker
     command: [python, -m, app.worker]
     depends_on:
       migrate:
