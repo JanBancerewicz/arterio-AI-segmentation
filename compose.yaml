@@ -6,7 +6,7 @@ x-backend: &backend
     DATABASE_URL: postgresql://arterio:arterio@db:5432/arterio
     STORAGE_DIR: /var/lib/arterio
     APP_ORIGIN: ${APP_ORIGIN:-http://localhost:8000}
-    APP_EXTRA_ORIGINS: ${APP_EXTRA_ORIGINS-http://localhost:5173}
+    APP_EXTRA_ORIGINS: ${APP_EXTRA_ORIGINS-http://localhost:5173,http://localhost:8080}
     SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
     JOB_TIMEOUT_SECONDS: ${JOB_TIMEOUT_SECONDS:-120}
     CHECKPOINT_DIR: /models
@@ -20,6 +20,23 @@ x-backend: &backend
   init: true
 
 services:
+  frontend:
+    image: arterio-frontend:web
+    build:
+      context: ./gui/arterio-gui
+    ports:
+      - '127.0.0.1:8080:8080'
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, wget, -q, --spider, http://127.0.0.1:8080/healthz]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    init: true
+    restart: unless-stopped
+
   db:
     image: postgres:17-bookworm
     environment:
