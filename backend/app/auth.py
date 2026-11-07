@@ -9,6 +9,7 @@ from fastapi.security import APIKeyCookie
 from . import config, sessions
 from .errors import ApiError
 from .schemas import ErrorResponse, LoginInput, PublicUser
+from .limits import login_succeeded, reserve_login
 
 router = APIRouter(prefix="/api/v1/auth", tags=["Authentication"], responses={
     422: {"model": ErrorResponse, "description": "VALIDATION_ERROR"},
@@ -50,11 +51,14 @@ def require_user(request: Request, token: Annotated[str | None, Depends(cookie)]
 @router.post("/login", response_model=PublicUser, dependencies=[Depends(same_origin)], responses={
     401: {"model": ErrorResponse, "description": "INVALID_CREDENTIALS"},
     403: {"model": ErrorResponse, "description": "FORBIDDEN_ORIGIN"},
+    429: {"model": ErrorResponse, "description": "RATE_LIMITED"},
 })
 def login(data: LoginInput, request: Request, response: Response):
+    reserve_login(data.username, request.client.host if request.client else "unknown")
     session = sessions.login(data.username, data.password, request.cookies.get(config.SESSION_COOKIE_NAME))
     if not session:
         raise ApiError(401, "INVALID_CREDENTIALS", "Nieprawidłowy identyfikator lub hasło.")
+    login_succeeded(data.username)
     set_session_cookie(response, session)
     return session.user
 

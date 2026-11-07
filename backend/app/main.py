@@ -11,6 +11,7 @@ from fastapi import Depends, FastAPI, File, Form, Query, Request, Response, Uplo
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
 from PIL import Image, UnidentifiedImageError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from .config import MAX_FILE_BYTES, STORAGE_DIR, WORKER_STALE_SECONDS
 from .auth import clear_session_cookie, require_user, router as auth_router, same_origin, set_session_cookie
@@ -20,6 +21,10 @@ from .repository import serialize
 from .schemas import Analysis, AnalysisPage, ErrorResponse, PublicUser, SegmentationModel
 from .worker_monitor import monitor_lifetime
 from .models import UNET_ID, catalogue, find_model
+from .body_limit import BodyLimitMiddleware
+from .events import router as events_router
+from .limits import check_analysis_limits
+from .storage import cleanup_lifetime, cleanup_pending
 
 CurrentUser = Annotated[PublicUser, Depends(require_user)]
 AUTH_ERRORS = {401: {"model": ErrorResponse, "description": "UNAUTHENTICATED"}}
@@ -30,17 +35,20 @@ log = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    with monitor_lifetime():
+    with monitor_lifetime(), cleanup_lifetime(STORAGE_DIR):
         yield
 
 
 app = FastAPI(
     title="Arterio — infrastructure prototype",
-    version="0.3.0",
+    version="0.4.0",
     description="Local API with sessions, owner-only analyses and optional U-Net inference. Production hardening is incomplete.",
     lifespan=lifespan,
+    responses={422: {"model": ErrorResponse, "description": "VALIDATION_ERROR"}},
 )
 app.include_router(auth_router)
+app.include_router(events_router)  # Register /events before /{analysis_id}.
+app.add_middleware(BodyLimitMiddleware)
 
 
 @app.middleware("http")
@@ -58,15 +66,17 @@ async def request_metadata(request: Request, call_next):
 
 
 def error_response(request, status, code, message, details=None):
+    request_id = getattr(request.state, "request_id", str(uuid4()))
     return JSONResponse(status_code=status, content={"error": {
         "code": code, "message": message, "details": details,
-        "requestId": getattr(request.state, "request_id", str(uuid4())),
-    }}, headers={"Cache-Control": "no-store"})
+        "requestId": request_id,
+    }}, headers={"Cache-Control": "no-store", "X-Request-ID": request_id})
 
 
 @app.exception_handler(ApiError)
 async def api_error(request: Request, exc: ApiError):
     response = error_response(request, exc.status, exc.code, exc.message, exc.details)
+    response.headers.update(exc.headers)
     if exc.code == "UNAUTHENTICATED":
         clear_session_cookie(response)
     return response
@@ -76,6 +86,17 @@ async def api_error(request: Request, exc: ApiError):
 async def validation_error(request: Request, exc: RequestValidationError):
     fields = [{"field": ".".join(map(str, e["loc"])), "message": e["msg"]} for e in exc.errors()]
     return error_response(request, 422, "VALIDATION_ERROR", "Niepoprawne dane żądania.", {"fields": fields})
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_error(request: Request, exc: StarletteHTTPException):
+    code, message = {
+        404: ("NOT_FOUND", "Nie znaleziono zasobu."),
+        405: ("METHOD_NOT_ALLOWED", "Niedozwolona metoda HTTP."),
+    }.get(exc.status_code, ("VALIDATION_ERROR", "Niepoprawne żądanie HTTP."))
+    response = error_response(request, exc.status_code, code, message)
+    response.headers.update(exc.headers or {})
+    return response
 
 
 @app.exception_handler(Exception)
@@ -92,7 +113,7 @@ def health():
             (WORKER_STALE_SECONDS,),
         ).fetchone()["n"]
         queued = conn.execute("SELECT count(*) AS n FROM analyses WHERE status = 'queued' AND user_id IS NOT NULL").fetchone()["n"]
-    return {"status": "ok" if count else "degraded", "workersOnline": count, "queueLength": queued, "mode": "smoke-test"}
+    return {"status": "ok" if count else "degraded", "workersOnline": count, "queueLength": queued, "mode": "development"}
 
 
 @app.get("/api/v1/models", response_model=list[SegmentationModel], responses=AUTH_ERRORS)
@@ -107,6 +128,10 @@ def models(user: CurrentUser):
 @app.post("/api/v1/analyses", status_code=201, response_model=Analysis,
           dependencies=[Depends(same_origin)], responses={
               **AUTH_ERRORS, 403: {"model": ErrorResponse, "description": "FORBIDDEN_ORIGIN"},
+              413: {"model": ErrorResponse, "description": "FILE_TOO_LARGE or REQUEST_TOO_LARGE"},
+              415: {"model": ErrorResponse, "description": "UNSUPPORTED_FILE_TYPE"},
+              429: {"model": ErrorResponse, "description": "TOO_MANY_ACTIVE_ANALYSES"},
+              503: {"model": ErrorResponse, "description": "MODEL_UNAVAILABLE or QUEUE_FULL"},
           })
 def create_analysis(user: CurrentUser, response: Response, file: Annotated[UploadFile, File()],
                     model_id: Annotated[str, Form(alias="modelId")]):
@@ -144,6 +169,7 @@ def create_analysis(user: CurrentUser, response: Response, file: Annotated[Uploa
         folder.mkdir(parents=True)
         (folder / "original.png").write_bytes(data)
         with connect() as conn:
+            check_analysis_limits(conn, user.id)
             row = conn.execute(
                 """INSERT INTO analyses (id, user_id, filename, model_id, model_name, model_version, status, width, height)
                    VALUES (%s, %s, %s, %s, %s, %s, 'queued', %s, %s) RETURNING *""",
@@ -203,6 +229,28 @@ def cancel_analysis(analysis_id: UUID, user: CurrentUser):
         if row["status"] != "cancelled":
             raise ApiError(409, "ANALYSIS_NOT_CANCELLABLE", "Można anulować tylko zadanie oczekujące.", {"status": row["status"]})
         return serialize(conn, row)
+
+
+@app.delete("/api/v1/analyses/{analysis_id}", status_code=204,
+            dependencies=[Depends(same_origin)], responses={
+                **ANALYSIS_ERRORS, 403: {"model": ErrorResponse, "description": "FORBIDDEN_ORIGIN"},
+                409: {"model": ErrorResponse, "description": "ANALYSIS_ACTIVE"},
+            })
+def delete_analysis(analysis_id: UUID, user: CurrentUser):
+    with connect() as conn:
+        row = conn.execute("SELECT status FROM analyses WHERE id = %s AND user_id = %s FOR UPDATE",
+                           (analysis_id, user.id)).fetchone()
+        if not row:
+            raise ApiError(404, "ANALYSIS_NOT_FOUND", "Nie znaleziono analizy.")
+        if row["status"] in {"queued", "processing"}:
+            raise ApiError(409, "ANALYSIS_ACTIVE", "Nie można usunąć aktywnej analizy. Najpierw anuluj zadanie oczekujące.")
+        conn.execute("INSERT INTO file_deletions (analysis_id) VALUES (%s)", (analysis_id,))
+        conn.execute("DELETE FROM analyses WHERE id = %s AND user_id = %s", (analysis_id, user.id))
+    try:
+        cleanup_pending(STORAGE_DIR)
+    except Exception:
+        log.exception("File cleanup queued for retry after deleting analysis %s", analysis_id)
+    return Response(status_code=204)
 
 
 @app.get("/api/v1/analyses/{analysis_id}/files/{kind}", responses={
