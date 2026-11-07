@@ -55,6 +55,8 @@
 .link { display: inline-block; margin-top: 1.5rem; color: #1D4ED8; }
 .error { padding: 0.75rem; border-radius: 8px; background: #FEF2F2; color: #B91C1C; overflow-wrap: anywhere; }
 .error .button { margin-left: 0.75rem; }
+.deleteSection { margin-top: 1.5rem; }
+.actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
 
 @media (max-width: 1000px) {
     .grid { grid-template-columns: minmax(0, 1fr); }

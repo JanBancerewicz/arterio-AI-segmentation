@@ -1,6 +1,6 @@
 import type {CreateAnalysisInput} from './CreateAnalysisInput.ts';
 import type {Analysis, AnalysisPage} from './Analysis.ts';
-import {ApiError, apiRequest} from './client.ts';
+import {ApiError, apiImageRequest, apiRequest} from './client.ts';
 
 export class AnalysisNotFoundError extends Error {
     constructor() { super('Nie znaleziono analizy.'); }
@@ -23,6 +23,14 @@ export const fetchAnalysis = async (id: string, signal?: AbortSignal): Promise<A
 
 export const cancelAnalysis = (id: string): Promise<Analysis> =>
     apiRequest<Analysis>(`/analyses/${encodeURIComponent(id)}/cancel`, {method: 'POST'});
+
+export const deleteAnalysis = (id: string): Promise<void> =>
+    apiRequest<void>(`/analyses/${encodeURIComponent(id)}`, {method: 'DELETE'});
+
+export type AnalysisFileKind = 'original' | 'mask' | 'overlay';
+
+export const fetchAnalysisFile = (id: string, kind: AnalysisFileKind, signal?: AbortSignal, download = false): Promise<Blob> =>
+    apiImageRequest(`/analyses/${encodeURIComponent(id)}/files/${kind}${download ? '?download=true' : ''}`, {signal});
 
 export const createAnalysis = (input: CreateAnalysisInput): Promise<Analysis> => {
     const body = new FormData();

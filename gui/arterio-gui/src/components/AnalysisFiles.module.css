@@ -1,0 +1,23 @@
+.card {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    background: var(--med-bg-surface);
+}
+.card h2 { margin: 0 0 1rem; font-size: 1.1rem; }
+.controls { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+.button {
+    padding: 0.65rem 1rem;
+    border: 1px solid #CBD5E1;
+    border-radius: 8px;
+    background: var(--med-bg-surface);
+    color: var(--med-text-main);
+    font: inherit;
+    cursor: pointer;
+}
+.button[aria-pressed="true"] { background: #EFF6FF; border-color: #2563EB; color: #1D4ED8; }
+.button:disabled { opacity: 0.6; cursor: not-allowed; }
+.button:focus-visible { outline: 2px solid #2563EB; outline-offset: 3px; }
+.image { display: block; max-width: 100%; max-height: 65vh; margin: 1rem auto; object-fit: contain; }
+.image[hidden] { display: none; }

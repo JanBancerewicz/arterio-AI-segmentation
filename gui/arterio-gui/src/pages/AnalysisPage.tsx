@@ -1,10 +1,13 @@
-import {Link, useParams} from 'react-router';
+import {Link, useNavigate, useParams} from 'react-router';
+import {useState} from 'react';
 import {useAnalysis} from '../hooks/useAnalysis.ts';
 import {useCancelAnalysis} from '../hooks/useCancelAnalysis.ts';
 import {AnalysisNotFoundError} from '../api/analyses.ts';
 import {StatusBadge} from '../components/StatusBadge.tsx';
 import {formatDate} from '../utils/formatDate.ts';
 import styles from './AnalysisPage.module.css';
+import {AnalysisFiles} from '../components/AnalysisFiles.tsx';
+import {useDeleteAnalysis} from '../hooks/useDeleteAnalysis.ts';
 
 export const AnalysisPage = () => {
     const {id = ''} = useParams();
@@ -15,6 +18,9 @@ export const AnalysisPage = () => {
 const AnalysisDetails = ({id}: {id: string}) => {
     const {data: analysis, isPending, isError, error, refetch, isFetching} = useAnalysis(id);
     const cancellation = useCancelAnalysis(id);
+    const deletion = useDeleteAnalysis(id);
+    const [confirmDelete, setConfirmDelete] = useState(false);
+    const navigate = useNavigate();
 
     if (!id || error instanceof AnalysisNotFoundError) {
         return <section className={styles.page}>
@@ -73,7 +79,6 @@ const AnalysisDetails = ({id}: {id: string}) => {
                     </>}
                     {analysis.status === 'completed' && <>
                         <p>Analiza została zakończona.</p>
-                        {/* Miejsce na osobny widok wyniku i maski. */}
                     </>}
                     {analysis.status === 'failed' && <>
                         <p>Nie udało się ukończyć analizy.</p>
@@ -97,9 +102,28 @@ const AnalysisDetails = ({id}: {id: string}) => {
                     <div><dt>Rozdzielczość</dt><dd>{analysis.width} × {analysis.height} px</dd></div>
                     <div><dt>Model</dt><dd>{analysis.modelName} · {analysis.modelVersion}</dd></div>
                     <div><dt>Utworzono</dt><dd>{formatDate(analysis.createdAt)}</dd></div>
+                    {analysis.finishedAt && <div><dt>Zakończono</dt><dd>{formatDate(analysis.finishedAt)}</dd></div>}
+                    {analysis.processingMs !== null && <div><dt>Czas przetwarzania</dt><dd>{(analysis.processingMs / 1000).toFixed(2)} s</dd></div>}
                 </dl>
             </section>
         </div>
+        <AnalysisFiles analysis={analysis} />
+        {!active && <section className={styles.deleteSection} aria-label="Usuwanie analizy">
+            {!confirmDelete ? <button className={styles.button} onClick={() => setConfirmDelete(true)}>
+                Usuń analizę
+            </button> : <div>
+                <p>Usunąć analizę „{analysis.filename}” i wszystkie jej pliki? Tej operacji nie można cofnąć.</p>
+                <div className={styles.actions}>
+                    <button className={styles.button} disabled={deletion.isPending}
+                        onClick={() => deletion.mutate(undefined, {onSuccess: () => navigate('/', {replace: true})})}>
+                        {deletion.isPending ? 'Usuwanie…' : 'Usuń analizę i pliki'}
+                    </button>
+                    <button className={styles.button} disabled={deletion.isPending}
+                        onClick={() => setConfirmDelete(false)}>Zachowaj analizę</button>
+                </div>
+            </div>}
+            {deletion.isError && <p className={styles.error} role="alert">{deletion.error.message}</p>}
+        </section>}
         <Link className={styles.link} to="/">Przejdź do nowej analizy</Link>
     </section>;
 };
