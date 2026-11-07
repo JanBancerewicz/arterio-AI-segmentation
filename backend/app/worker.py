@@ -1,33 +1,25 @@
-"""One job at a time; replace run_smoke_inference when adding a real model."""
+"""One supervised job at a time, with a reusable computation subprocess."""
 import logging
 import signal
+from datetime import datetime, timezone
 from threading import Event
 from time import monotonic
 from uuid import uuid4
 
 from PIL import Image, ImageOps
 
-from .config import JOB_TIMEOUT_SECONDS, STORAGE_DIR
-from .db import connect
+from .config import JOB_TIMEOUT_SECONDS, STORAGE_DIR, WORKER_HEARTBEAT_SECONDS
+from .execution import JobExecutor
+from .worker_monitor import fail_job, heartbeat, monitoring_connection, recover_jobs, unregister
 
 log = logging.getLogger(__name__)
 stop = Event()
 
 
 def claim_job(worker_id):
-    with connect() as conn:
-        conn.execute(
-            """INSERT INTO workers (id) VALUES (%s) ON CONFLICT (id)
-               DO UPDATE SET heartbeat_at = clock_timestamp()""", (worker_id,),
-        )
-        conn.execute(
-            """UPDATE analyses SET status = 'failed', error_code = 'TIMEOUT',
-               error_message = 'Przetwarzanie zostało przerwane lub przekroczyło limit czasu.',
-               finished_at = clock_timestamp(), processing_stage = NULL
-               WHERE status = 'processing' AND user_id IS NOT NULL
-               AND started_at < clock_timestamp() - (%s * interval '1 second')""",
-            (JOB_TIMEOUT_SECONDS,),
-        )
+    heartbeat(worker_id)
+    recover_jobs()
+    with monitoring_connection() as conn:
         return conn.execute(
             """UPDATE analyses SET status = 'processing', started_at = clock_timestamp(),
                processing_stage = 'preprocessing', worker_id = %s
@@ -38,7 +30,7 @@ def claim_job(worker_id):
 
 
 def set_stage(analysis_id, worker_id, stage):
-    with connect() as conn:
+    with monitoring_connection() as conn:
         row = conn.execute(
             """UPDATE analyses SET processing_stage = %s
                WHERE id = %s AND worker_id = %s AND status = 'processing' RETURNING id""",
@@ -65,37 +57,90 @@ def run_smoke_inference(row, worker_id):
         temporary.replace(folder / f"{kind}.png")
 
 
-def process_job(row, worker_id):
-    started = monotonic()
+def owned_job(analysis_id, worker_id):
+    with monitoring_connection() as conn:
+        return conn.execute(
+            "SELECT started_at FROM analyses WHERE id = %s AND worker_id = %s AND status = 'processing'",
+            (analysis_id, worker_id),
+        ).fetchone()
+
+
+class WorkerStopped(Exception):
+    pass
+
+
+def process_job(row, worker_id, executor=None, stop_event=None):
+    owns_executor = executor is None
+    executor = executor or JobExecutor(STORAGE_DIR)
+    stop_event = stop_event if stop_event is not None else stop
     try:
-        run_smoke_inference(row, worker_id)
-        if monotonic() - started > JOB_TIMEOUT_SECONDS:
+        current = owned_job(row["id"], worker_id)
+        if not current:
+            return
+        elapsed = max(0, (datetime.now(timezone.utc) - current["started_at"]).total_seconds())
+        deadline = monotonic() + max(0, JOB_TIMEOUT_SECONDS - elapsed)
+        heartbeat(worker_id)
+        next_heartbeat = monotonic() + WORKER_HEARTBEAT_SECONDS
+        if monotonic() >= deadline:
             raise TimeoutError("Job timeout")
-        with connect() as conn:
+        if stop_event.is_set():
+            raise WorkerStopped()
+        executor.submit(row, worker_id)
+        while True:
+            if stop_event.is_set():
+                raise WorkerStopped()
+            if monotonic() >= deadline:
+                raise TimeoutError("Job timeout")
+            if monotonic() >= next_heartbeat:
+                heartbeat(worker_id)
+                if not owned_job(row["id"], worker_id):
+                    executor.close()
+                    return
+                next_heartbeat = monotonic() + WORKER_HEARTBEAT_SECONDS
+            result = executor.result(min(0.2, max(0, deadline - monotonic())))
+            if result == "error":
+                raise ChildProcessError("Computation failed")
+            if result == "ok":
+                break
+        if stop_event.is_set():
+            raise WorkerStopped()
+        if monotonic() >= deadline:
+            raise TimeoutError("Job timeout")
+        with monitoring_connection() as conn:
             completed = conn.execute(
                 """UPDATE analyses SET status = 'completed', processing_stage = NULL,
                    finished_at = clock_timestamp()
-                   WHERE id = %s AND worker_id = %s AND status = 'processing' RETURNING id""",
-                (row["id"], worker_id),
+                   WHERE id = %s AND worker_id = %s AND status = 'processing'
+                     AND started_at > clock_timestamp() - (%s * interval '1 second')
+                   RETURNING id""",
+                (row["id"], worker_id, JOB_TIMEOUT_SECONDS),
             ).fetchone()
         if completed:
             log.info("Completed %s", row["id"])
+        else:
+            fail_job(row["id"], worker_id, "TIMEOUT", "Przekroczono limit czasu przetwarzania.")
     except Exception as exc:
-        log.exception("Job %s failed", row["id"])
-        code = "TIMEOUT" if isinstance(exc, TimeoutError) else "INFERENCE_FAILED"
-        with connect() as conn:
-            conn.execute(
-                """UPDATE analyses SET status = 'failed', processing_stage = NULL,
-                   finished_at = clock_timestamp(), error_code = %s,
-                   error_message = 'Próbny worker nie ukończył przetwarzania.'
-                   WHERE id = %s AND worker_id = %s AND status = 'processing'""",
-                (code, row["id"], worker_id),
-            )
+        executor.close()  # Kill computation before marking a terminal state.
+        if isinstance(exc, TimeoutError):
+            code, message = "TIMEOUT", "Przekroczono limit czasu przetwarzania."
+        elif isinstance(exc, WorkerStopped):
+            code, message = "WORKER_LOST", "Worker został zatrzymany podczas przetwarzania."
+        elif isinstance(exc, ChildProcessError):
+            code, message = "INFERENCE_FAILED", "Proces obliczeniowy nie ukończył przetwarzania."
+        else:
+            code, message = "WORKER_LOST", "Przerwano nadzór nad przetwarzaniem analizy."
+        log.warning("Job %s failed: %s", row["id"], code, exc_info=not isinstance(exc, (TimeoutError, WorkerStopped)))
+        fail_job(row["id"], worker_id, code, message)
+    finally:
+        if owns_executor:
+            executor.close()
 
 
 def main():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     worker_id = uuid4()
+    stop.clear()
+    executor = JobExecutor(STORAGE_DIR)
     for sig in (signal.SIGINT, signal.SIGTERM):
         signal.signal(sig, lambda *_: stop.set())
     log.info("Starting SMOKE-TEST worker %s (no AI model)", worker_id)
@@ -104,15 +149,15 @@ def main():
             try:
                 row = claim_job(worker_id)
                 if row:
-                    process_job(row, worker_id)
+                    process_job(row, worker_id, executor=executor)
                 else:
                     stop.wait(0.5)
             except Exception:
                 log.exception("Worker iteration failed; retrying")
                 stop.wait(2)
     finally:
-        with connect() as conn:
-            conn.execute("DELETE FROM workers WHERE id = %s", (worker_id,))
+        executor.close()
+        unregister(worker_id)
 
 
 if __name__ == "__main__":

@@ -7,6 +7,7 @@ x-backend: &backend
     STORAGE_DIR: /var/lib/arterio
     APP_ORIGIN: ${APP_ORIGIN:-http://localhost:8000}
     SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
+    JOB_TIMEOUT_SECONDS: ${JOB_TIMEOUT_SECONDS:-120}
   volumes:
     - analysis-files:/var/lib/arterio
   init: true

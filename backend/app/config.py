@@ -7,7 +7,11 @@ DATABASE_URL = os.environ.get(
 STORAGE_DIR = Path(os.environ.get("STORAGE_DIR", "backend/storage")).resolve()
 MAX_FILE_BYTES = 10 * 1024 * 1024
 MODEL_ID = "smoke-test"
-JOB_TIMEOUT_SECONDS = 120
+JOB_TIMEOUT_SECONDS = int(os.environ.get("JOB_TIMEOUT_SECONDS", "120"))
+if JOB_TIMEOUT_SECONDS < 1:
+    raise ValueError("JOB_TIMEOUT_SECONDS must be positive")
+WORKER_HEARTBEAT_SECONDS = 2
+WORKER_STALE_SECONDS = 10
 
 APP_ORIGIN = os.environ.get("APP_ORIGIN", "http://localhost:8000").rstrip("/")
 SESSION_COOKIE_NAME = "arterio_session"

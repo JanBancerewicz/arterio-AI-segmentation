@@ -2,6 +2,7 @@
 import logging
 import shutil
 import warnings
+from contextlib import asynccontextmanager
 from io import BytesIO
 from typing import Annotated, Literal
 from uuid import UUID, uuid4
@@ -11,22 +12,32 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
 from PIL import Image, UnidentifiedImageError
 
-from .config import MAX_FILE_BYTES, MODEL_ID, STORAGE_DIR
+from .config import MAX_FILE_BYTES, MODEL_ID, STORAGE_DIR, WORKER_STALE_SECONDS
 from .auth import clear_session_cookie, require_user, router as auth_router, same_origin, set_session_cookie
 from .db import connect
 from .errors import ApiError
 from .repository import serialize
 from .schemas import Analysis, AnalysisPage, ErrorResponse, PublicUser, SegmentationModel
+from .worker_monitor import monitor_lifetime
 
 CurrentUser = Annotated[PublicUser, Depends(require_user)]
 AUTH_ERRORS = {401: {"model": ErrorResponse, "description": "UNAUTHENTICATED"}}
 ANALYSIS_ERRORS = {**AUTH_ERRORS, 404: {"model": ErrorResponse, "description": "ANALYSIS_NOT_FOUND"}}
 
 log = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    with monitor_lifetime():
+        yield
+
+
 app = FastAPI(
     title="Arterio — infrastructure prototype",
     version="0.3.0",
     description="Local smoke-test API with sessions and owner-only analyses. No AI inference; production hardening is incomplete.",
+    lifespan=lifespan,
 )
 app.include_router(auth_router)
 
@@ -76,7 +87,8 @@ async def internal_error(request: Request, exc: Exception):
 def health():
     with connect() as conn:
         count = conn.execute(
-            "SELECT count(*) AS n FROM workers WHERE heartbeat_at > clock_timestamp() - interval '10 seconds'"
+            "SELECT count(*) AS n FROM workers WHERE heartbeat_at > clock_timestamp() - (%s * interval '1 second')",
+            (WORKER_STALE_SECONDS,),
         ).fetchone()["n"]
         queued = conn.execute("SELECT count(*) AS n FROM analyses WHERE status = 'queued' AND user_id IS NOT NULL").fetchone()["n"]
     return {"status": "ok" if count else "degraded", "workersOnline": count, "queueLength": queued, "mode": "smoke-test"}
