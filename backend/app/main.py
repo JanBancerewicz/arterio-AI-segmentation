@@ -1,4 +1,4 @@
-"""Local infrastructure prototype. Authentication is intentionally not implemented yet."""
+"""Local prototype with authentication; analysis ownership is added next."""
 import logging
 import shutil
 import warnings
@@ -12,21 +12,19 @@ from fastapi.responses import FileResponse, JSONResponse
 from PIL import Image, UnidentifiedImageError
 
 from .config import MAX_FILE_BYTES, MODEL_ID, STORAGE_DIR
+from .auth import clear_session_cookie, router as auth_router
 from .db import connect
+from .errors import ApiError
 from .repository import serialize
 from .schemas import Analysis, AnalysisPage, SegmentationModel
 
 log = logging.getLogger(__name__)
 app = FastAPI(
     title="Arterio — infrastructure prototype",
-    version="0.1.0",
-    description="Local smoke-test API. No authentication, GPU or AI inference. Do not expose publicly.",
+    version="0.2.0",
+    description="Local smoke-test API with session endpoints. Analyses are still public; no AI inference. Do not expose publicly.",
 )
-
-
-class ApiError(Exception):
-    def __init__(self, status, code, message, details=None):
-        self.status, self.code, self.message, self.details = status, code, message, details
+app.include_router(auth_router)
 
 
 @app.middleware("http")
@@ -47,7 +45,10 @@ def error_response(request, status, code, message, details=None):
 
 @app.exception_handler(ApiError)
 async def api_error(request: Request, exc: ApiError):
-    return error_response(request, exc.status, exc.code, exc.message, exc.details)
+    response = error_response(request, exc.status, exc.code, exc.message, exc.details)
+    if exc.code == "UNAUTHENTICATED":
+        clear_session_cookie(response)
+    return response
 
 
 @app.exception_handler(RequestValidationError)

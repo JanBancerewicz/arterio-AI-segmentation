@@ -2,12 +2,35 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 
 
 class ApiModel(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+
+class LoginInput(ApiModel):
+    model_config = ConfigDict(extra="forbid")
+    username: str = Field(min_length=1, max_length=128)
+    password: str = Field(min_length=1, max_length=128, repr=False)
+
+
+class PublicUser(ApiModel):
+    id: UUID
+    username: str
+    display_name: str
+
+
+class ErrorDetails(ApiModel):
+    code: str
+    message: str
+    details: dict | None
+    request_id: str
+
+
+class ErrorResponse(ApiModel):
+    error: ErrorDetails
 
 
 class Files(ApiModel):
