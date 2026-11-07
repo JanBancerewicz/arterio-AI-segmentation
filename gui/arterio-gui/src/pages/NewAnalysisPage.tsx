@@ -13,17 +13,19 @@ export const NewAnalysisPage = () => {
 
     const { data: models, isPending, isError, error } = useSegmentationModels();
 
-    const defaultModelId = models?.find(model => model.isDefault)?.id ?? null;
+    const defaultModelId = models?.find(model => model.isDefault && model.available)?.id
+        ?? models?.find(model => model.available)?.id ?? null;
     const selectedModelId = chosenModelId ?? defaultModelId;
+    const selectedModelAvailable = models?.some(model => model.id === selectedModelId && model.available) === true;
 
     const createAnalysisMutation = useCreateAnalysis();
     const navigate = useNavigate();
 
-    const canSubmit = uploadedFile !== null && selectedModelId !== null && !createAnalysisMutation.isPending;
+    const canSubmit = uploadedFile !== null && selectedModelAvailable && !isError && !createAnalysisMutation.isPending;
 
     const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (!uploadedFile || !selectedModelId) {
+        if (!canSubmit || !uploadedFile || !selectedModelId) {
             return;
         }
         createAnalysisMutation.mutate(

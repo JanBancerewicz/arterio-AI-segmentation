@@ -1,64 +1,32 @@
-import type {CreateAnalysisInput} from "./CreateAnalysisInput.ts";
-import type {Analysis} from "./Analysis.ts";
-import {analysesMock} from "../mocks/Analyses.mock.ts";
-
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+import type {CreateAnalysisInput} from './CreateAnalysisInput.ts';
+import type {Analysis, AnalysisPage} from './Analysis.ts';
+import {ApiError, apiRequest} from './client.ts';
 
 export class AnalysisNotFoundError extends Error {
-    constructor() {
-        super('Nie znaleziono analizy.');
+    constructor() { super('Nie znaleziono analizy.'); }
+}
+
+export const fetchAnalyses = (page: number, status?: string, signal?: AbortSignal): Promise<AnalysisPage> => {
+    const params = new URLSearchParams({page: String(page), pageSize: '20'});
+    if (status) params.set('status', status);
+    return apiRequest<AnalysisPage>(`/analyses?${params}`, {signal});
+};
+
+export const fetchAnalysis = async (id: string, signal?: AbortSignal): Promise<Analysis> => {
+    try {
+        return await apiRequest<Analysis>(`/analyses/${encodeURIComponent(id)}`, {signal});
+    } catch (error) {
+        if (error instanceof ApiError && error.status === 404) throw new AnalysisNotFoundError();
+        throw error;
     }
-}
+};
 
-const withQueuePosition = (analysis: Analysis): Analysis => ({
-    ...analysis,
-    queuePosition: analysis.status === 'queued'
-        ? analysesMock.filter(item => item.status === 'queued').findIndex(item => item.id === analysis.id) + 1
-        : null,
-});
+export const cancelAnalysis = (id: string): Promise<Analysis> =>
+    apiRequest<Analysis>(`/analyses/${encodeURIComponent(id)}/cancel`, {method: 'POST'});
 
-export const fetchAnalyses = async (): Promise<Analysis[]> => {
-    await delay(400);
-    return analysesMock.map(withQueuePosition).sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
-}
-
-export const fetchAnalysis = async (id: string): Promise<Analysis> => {
-    await delay(300);
-    const analysis = analysesMock.find(analysis => analysis.id === id);
-    if (!analysis) {
-        throw new AnalysisNotFoundError();
-    }
-    return withQueuePosition(analysis);
-}
-
-export const cancelAnalysis = async (id: string): Promise<Analysis> => {
-    await delay(400);
-    const analysis = analysesMock.find(item => item.id === id);
-    if (!analysis) throw new AnalysisNotFoundError();
-    if (analysis.status !== 'queued') {
-        throw new Error('Można anulować tylko analizę oczekującą w kolejce. Odświeżono jej status.');
-    }
-    analysis.status = 'cancelled';
-    return withQueuePosition(analysis);
-}
-
-export const createAnalysis = async (input: CreateAnalysisInput): Promise<Analysis> => {
-    await delay(600);
-    console.log('Tworzenie analizy:', input.file.name, input.modelId);
-
-    const bitmap = await createImageBitmap(input.file);
-    const analysis: Analysis = {
-        id: crypto.randomUUID(),
-        filename: input.file.name,
-        modelId: input.modelId,
-        status: 'queued',
-        createdAt: new Date().toISOString(),
-        width: bitmap.width,
-        height: bitmap.height,
-        errorMessage: null,
-    };
-    bitmap.close();
-
-    analysesMock.push(analysis);
-    return withQueuePosition(analysis);
-}
+export const createAnalysis = (input: CreateAnalysisInput): Promise<Analysis> => {
+    const body = new FormData();
+    body.append('file', input.file);
+    body.append('modelId', input.modelId);
+    return apiRequest<Analysis>('/analyses', {method: 'POST', body});
+};

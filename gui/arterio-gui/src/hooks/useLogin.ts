@@ -12,6 +12,7 @@ export const useLogin = () => {
         onSuccess: async user => {
             await queryClient.cancelQueries();
             queryClient.removeQueries({queryKey: analysisKeys.all});
+            queryClient.removeQueries({queryKey: ['segmentation-models']});
             queryClient.setQueryData(sessionKey, user);
         },
     });

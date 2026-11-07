@@ -15,12 +15,13 @@ const statusesByFilter: Record<StatusFilter, AnalysisStatus[] | null> = {
 
 export const AnalysesList = () => {
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-    const { data: analyses, isPending, isError } = useAnalyses();
-
     const allowedStatuses = statusesByFilter[statusFilter];
-    const visibleAnalyses = allowedStatuses
-        ? analyses?.filter(analysis => allowedStatuses.includes(analysis.status))
-        : analyses;
+    const {data, isPending, isError, fetchNextPage, hasNextPage, isFetching, refetch} =
+        useAnalyses(allowedStatuses?.join(',') ?? '');
+    // Page boundaries can move when a new analysis is created.
+    const visibleAnalyses = data
+        ? [...new Map(data.pages.flatMap(page => page.items).map(item => [item.id, item])).values()]
+        : undefined;
 
     return (
         <section className={styles.history}>
@@ -41,12 +42,12 @@ export const AnalysesList = () => {
 
             {isPending && <p className={styles.status}>Ładowanie historii…</p>}
             {isError && <p className={styles.status} role="alert">Nie udało się pobrać historii.</p>}
+            {isError && <button disabled={isFetching} onClick={() => void refetch()}>Spróbuj ponownie</button>}
             {visibleAnalyses && visibleAnalyses.length === 0 && (
                 <p className={styles.status}>
                     {statusFilter === 'all' ? 'Brak analiz.' : 'Brak analiz o tym statusie.'}
                 </p>
             )}
-
             {visibleAnalyses && visibleAnalyses.length > 0 && (
                 <ul className={styles.list}>
                     {visibleAnalyses.map(analysis => (
@@ -54,6 +55,9 @@ export const AnalysesList = () => {
                     ))}
                 </ul>
             )}
+            {hasNextPage && <button disabled={isFetching} onClick={() => void fetchNextPage()}>
+                {isFetching ? 'Ładowanie…' : 'Pokaż więcej'}
+            </button>}
         </section>
     )
 }

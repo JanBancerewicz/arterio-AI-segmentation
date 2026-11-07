@@ -15,6 +15,7 @@ export const useLogout = () => {
             queryClient.removeQueries({
                 queryKey: analysisKeys.all,
             });
+            queryClient.removeQueries({queryKey: ['segmentation-models']});
 
             queryClient.setQueryData(sessionKey, null);
         },

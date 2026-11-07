@@ -43,6 +43,7 @@ const AnalysisDetails = ({id}: {id: string}) => {
     }
 
     const active = analysis.status === 'queued' || analysis.status === 'processing';
+    const stageNames = {preprocessing: 'Przygotowanie obrazu', inference: 'Segmentacja naczyń', postprocessing: 'Przygotowanie wyniku'};
 
     return <section className={styles.page}>
         <header className={styles.header}>
@@ -68,7 +69,7 @@ const AnalysisDetails = ({id}: {id: string}) => {
                     </>}
                     {analysis.status === 'processing' && <>
                         <p>Trwa przetwarzanie obrazu.</p>
-                        <p className={styles.detail}>Etap: <strong>{analysis.processingStage ?? 'Oczekiwanie na informację o etapie'}</strong></p>
+                        <p className={styles.detail}>Etap: <strong>{analysis.processingStage ? stageNames[analysis.processingStage] : 'Oczekiwanie na informację o etapie'}</strong></p>
                     </>}
                     {analysis.status === 'completed' && <>
                         <p>Analiza została zakończona.</p>
@@ -94,7 +95,7 @@ const AnalysisDetails = ({id}: {id: string}) => {
                 <dl className={styles.metadata}>
                     <div><dt>Plik</dt><dd>{analysis.filename}</dd></div>
                     <div><dt>Rozdzielczość</dt><dd>{analysis.width} × {analysis.height} px</dd></div>
-                    <div><dt>Identyfikator modelu</dt><dd>{analysis.modelId}</dd></div>
+                    <div><dt>Model</dt><dd>{analysis.modelName} · {analysis.modelVersion}</dd></div>
                     <div><dt>Utworzono</dt><dd>{formatDate(analysis.createdAt)}</dd></div>
                 </dl>
             </section>

@@ -1,8 +1,5 @@
-import type {SegmentationModel} from "./SegmentationModel.ts";
-import {segmentationModelsMock} from "../mocks/AnalysisModel.mock.ts";
+import type {SegmentationModel} from './SegmentationModel.ts';
+import {apiRequest} from './client.ts';
 
-export const fetchModels = async ():
-    Promise<SegmentationModel[]> => {
-        await new Promise(resolve => setTimeout(resolve, 400));
-        return segmentationModelsMock;
-}
+export const fetchModels = (signal?: AbortSignal): Promise<SegmentationModel[]> =>
+    apiRequest<SegmentationModel[]>('/models', {signal});
