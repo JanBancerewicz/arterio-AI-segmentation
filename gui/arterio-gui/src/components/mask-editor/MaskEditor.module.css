@@ -1,0 +1,19 @@
+.editor { min-width: 0; }
+.notice { padding: 0.75rem; background: #EFF6FF; color: #1E40AF; border-radius: 8px; line-height: 1.5; }
+.toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin: 0.75rem 0; }
+.toolbar button, .editor > button {
+    padding: 0.55rem 0.75rem; border: 1px solid #CBD5E1; border-radius: 8px;
+    background: #FFF; color: #1E293B; font: inherit; cursor: pointer;
+}
+.toolbar button[aria-pressed="true"] { background: #EFF6FF; border-color: #2563EB; color: #1D4ED8; }
+.toolbar button:disabled { opacity: 0.5; cursor: not-allowed; }
+.toolbar label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem; padding: 0 0.25rem; }
+.toolbar .checkbox { flex-direction: row; align-items: center; }
+.toolbar input[type="range"] { width: 140px; max-width: 100%; }
+.toolbar :focus-visible, .viewport:focus-visible { outline: 2px solid #2563EB; outline-offset: 2px; }
+.hint { color: #64748B; font-size: 0.8rem; line-height: 1.5; }
+.viewport { height: clamp(320px, 55dvh, 800px); overflow: auto; background: #0F172A; border-radius: 8px; touch-action: none; overscroll-behavior: contain; }
+.surface { min-width: 100%; min-height: 100%; display: grid; place-items: center; padding: 16px; }
+.surface canvas { display: block; image-rendering: pixelated; touch-action: none; }
+.confirmation { padding: 1rem; border: 1px solid #F59E0B; border-radius: 8px; background: #FFFBEB; color: #78350F; }
+.confirmation h3 { margin-top: 0; font-size: 1rem; }

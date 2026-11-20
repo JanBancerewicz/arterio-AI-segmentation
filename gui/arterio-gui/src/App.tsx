@@ -1,4 +1,4 @@
-import {Route, Routes} from "react-router";
+import {createBrowserRouter, createRoutesFromElements, Route} from "react-router";
 import {AppLayout} from "./layouts/AppLayout.tsx";
 import {NewAnalysisPage} from "./pages/NewAnalysisPage.tsx";
 import {AnalysisPage} from "./pages/AnalysisPage.tsx";
@@ -6,9 +6,8 @@ import {AuthLayout} from "./layouts/AuthLayout.tsx";
 import {LoginPage} from "./pages/LoginPage.tsx";
 import {RequireSession} from "./components/RequireSession.tsx";
 
-function App() {
-    return (
-        <Routes>
+export const router = createBrowserRouter(createRoutesFromElements(
+        <>
             <Route element={<RequireSession />} >
                 <Route element={<AppLayout />} >
                     <Route index element={<NewAnalysisPage />} />
@@ -18,8 +17,5 @@ function App() {
             <Route element={<AuthLayout />} >
                 <Route path="/login" element={<LoginPage />} />
             </Route>
-        </Routes>
-    )
-}
-
-export default App
+        </>
+));

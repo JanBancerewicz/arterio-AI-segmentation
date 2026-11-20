@@ -4,12 +4,14 @@ import type {Analysis} from '../api/Analysis.ts';
 import {type AnalysisFileKind, fetchAnalysisFile} from '../api/analyses.ts';
 import {analysisKeys} from '../hooks/analysisKeys.ts';
 import styles from './AnalysisFiles.module.css';
+import {MaskEditor} from './mask-editor/MaskEditor.tsx';
 
 const labels: Record<AnalysisFileKind, string> = {
     original: 'Oryginał', mask: 'Maska', overlay: 'Nałożenie maski',
 };
 
 export const AnalysisFiles = ({analysis}: {analysis: Analysis}) => {
+    const [editing, setEditing] = useState(false);
     const [kind, setKind] = useState<AnalysisFileKind | null>(null);
     const available = (['original', 'mask', 'overlay'] as const)
         .filter(item => item === 'original' || (analysis.status === 'completed' && analysis.files[item]));
@@ -21,6 +23,7 @@ export const AnalysisFiles = ({analysis}: {analysis: Analysis}) => {
         {analysis.modelId === 'smoke-test' && <p className={styles.testNotice}>
             Wynik testowy — progowanie jasności. To nie jest segmentacja naczyń przez model AI.
         </p>}
+        {editing ? <MaskEditor analysis={analysis} onClose={() => setEditing(false)} /> : <>
         <div className={styles.controls} role="group" aria-label="Wybór obrazu">
             {available.map(item => <button key={item} type="button"
                 className={styles.button} aria-pressed={selected === item}
@@ -31,6 +34,9 @@ export const AnalysisFiles = ({analysis}: {analysis: Analysis}) => {
         {(analysis.status === 'failed' || analysis.status === 'cancelled') &&
             <p>Ta analiza nie ma wyniku segmentacji.</p>}
         <FilePreview key={selected} analysis={analysis} kind={selected} />
+        {analysis.status === 'completed' && analysis.files.mask && <button className={styles.button}
+            onClick={() => setEditing(true)}>Edytuj maskę</button>}
+        </>}
     </section>;
 };
 

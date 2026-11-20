@@ -1,5 +1,6 @@
 import {Link, useNavigate, useParams} from 'react-router';
-import {useState} from 'react';
+import {useContext, useState} from 'react';
+import {MaskEditContext} from '../context/MaskEditContext.ts';
 import {useAnalysis} from '../hooks/useAnalysis.ts';
 import {useCancelAnalysis} from '../hooks/useCancelAnalysis.ts';
 import {AnalysisNotFoundError} from '../api/analyses.ts';
@@ -21,6 +22,7 @@ const AnalysisDetails = ({id}: {id: string}) => {
     const deletion = useDeleteAnalysis(id);
     const [confirmDelete, setConfirmDelete] = useState(false);
     const navigate = useNavigate();
+    const {dirty} = useContext(MaskEditContext);
 
     if (!id || error instanceof AnalysisNotFoundError) {
         return <section className={styles.page}>
@@ -109,12 +111,12 @@ const AnalysisDetails = ({id}: {id: string}) => {
                     </dl>
                 </section>
                 {!active && <section className={styles.deleteSection} aria-label="Usuwanie analizy">
-                    {!confirmDelete ? <button className={styles.button} onClick={() => setConfirmDelete(true)}>
+                    {!confirmDelete ? <button className={styles.button} disabled={dirty} onClick={() => setConfirmDelete(true)}>
                         Usuń analizę
                     </button> : <div>
                         <p>Usunąć analizę „{analysis.filename}” i wszystkie jej pliki? Tej operacji nie można cofnąć.</p>
                         <div className={styles.actions}>
-                            <button className={styles.button} disabled={deletion.isPending}
+                            <button className={styles.button} disabled={deletion.isPending || dirty}
                                 onClick={() => deletion.mutate(undefined, {onSuccess: () => navigate('/', {replace: true})})}>
                                 {deletion.isPending ? 'Usuwanie…' : 'Usuń analizę i pliki'}
                             </button>
@@ -123,6 +125,7 @@ const AnalysisDetails = ({id}: {id: string}) => {
                         </div>
                     </div>}
                     {deletion.isError && <p className={styles.error} role="alert">{deletion.error.message}</p>}
+                    {dirty && <p className={styles.hint}>Zakończ edycję maski przed usunięciem analizy.</p>}
                 </section>}
             </aside>
         </div>

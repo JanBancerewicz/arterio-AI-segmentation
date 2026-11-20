@@ -1,6 +1,8 @@
 import styles from './UserPanel.module.css';
 import {useSession} from "../hooks/useSession.ts";
 import {useLogout} from "../hooks/useLogout.ts";
+import {useContext} from 'react';
+import {MaskEditContext} from '../context/MaskEditContext.ts';
 
 const createAvatar = (displayName: string): string => {
     const splitedParts = displayName.trim().split(/\s+/).slice(0, 2);
@@ -14,6 +16,7 @@ const createAvatar = (displayName: string): string => {
 export const UserPanel = () => {
     const {data: user} = useSession();
     const logoutMutation = useLogout();
+    const {dirty} = useContext(MaskEditContext);
 
     if(!user){
         return null;
@@ -35,11 +38,12 @@ export const UserPanel = () => {
             <button
                     type="button"
                     className={styles.logout}
-                    disabled={logoutMutation.isPending}
+                    disabled={logoutMutation.isPending || dirty}
                     onClick={() => logoutMutation.mutate()}
                 >
                     {logoutMutation.isPending ? 'Wylogowywanie...' : 'Wyloguj'}
                 </button>
+            {dirty && <p className={styles.caption}>Zakończ edycję maski przed wylogowaniem.</p>}
             {logoutMutation.isError && (
                 <p className={styles.error} role="alert">
                     Nie udało się wylogować. Spróbuj ponownie.
