@@ -19,11 +19,11 @@ def main(argv=None) -> int:
         # Never fall back to echoing a password when there is no usable terminal.
         with warnings.catch_warnings():
             warnings.simplefilter("error", getpass.GetPassWarning)
-            password = getpass.getpass("Hasło (12–128 znaków): ")
-            confirmation = getpass.getpass("Powtórz hasło: ")
+            password = getpass.getpass("Hasło tymczasowe (12–128 znaków): ")
+            confirmation = getpass.getpass("Powtórz hasło tymczasowe: ")
         if password != confirmation:
             raise ValueError("Podane hasła nie są identyczne.")
-        user = create_user(username, args.display_name, password)
+        user = create_user(username, args.display_name, password, must_change_password=True)
     except (EOFError, getpass.GetPassWarning):
         print("Nie można bezpiecznie odczytać hasła. Uruchom polecenie w interaktywnym terminalu.", file=sys.stderr)
         return 2
@@ -37,6 +37,7 @@ def main(argv=None) -> int:
         print("Nie udało się zapisać konta. Sprawdź połączenie z bazą i wykonanie migracji.", file=sys.stderr)
         return 1
     print(f"Utworzono konto: {user.username} (id: {user.id}).")
+    print("Użytkownik zmieni hasło tymczasowe przy pierwszym logowaniu.")
     return 0
 
 

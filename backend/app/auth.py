@@ -8,8 +8,9 @@ from fastapi.security import APIKeyCookie
 
 from . import config, sessions
 from .errors import ApiError
-from .schemas import ErrorResponse, LoginInput, PublicUser
+from .schemas import ChangePasswordInput, ErrorResponse, LoginInput, PublicUser
 from .limits import login_succeeded, reserve_login
+from .users import validate_password
 
 router = APIRouter(prefix="/api/v1/auth", tags=["Authentication"], responses={
     422: {"model": ErrorResponse, "description": "VALIDATION_ERROR"},
@@ -40,12 +41,18 @@ def clear_session_cookie(response: Response) -> None:
     )
 
 
-def require_user(request: Request, token: Annotated[str | None, Depends(cookie)]) -> PublicUser:
+def require_session(request: Request, token: Annotated[str | None, Depends(cookie)]) -> sessions.Session:
     """Authenticate and let the HTTP middleware refresh every response type."""
     session = sessions.current_session(token)
     if not session:
         raise ApiError(401, "UNAUTHENTICATED", "Sesja wygasła lub użytkownik nie jest zalogowany.")
     request.state.auth_session = session
+    return session
+
+
+def require_user(session: Annotated[sessions.Session, Depends(require_session)]) -> PublicUser:
+    if session.user.must_change_password:
+        raise ApiError(403, "PASSWORD_CHANGE_REQUIRED", "Przed dalszą pracą zmień hasło tymczasowe.")
     return session.user
 
 
@@ -67,7 +74,28 @@ def login(data: LoginInput, request: Request, response: Response):
 @router.get("/me", response_model=PublicUser, responses={
     401: {"model": ErrorResponse, "description": "UNAUTHENTICATED"},
 })
-def me(user: Annotated[PublicUser, Depends(require_user)]):
+def me(session: Annotated[sessions.Session, Depends(require_session)]):
+    return session.user
+
+
+@router.post("/password", response_model=PublicUser, dependencies=[Depends(same_origin)], responses={
+    401: {"model": ErrorResponse, "description": "UNAUTHENTICATED"},
+    403: {"model": ErrorResponse, "description": "FORBIDDEN_ORIGIN or INVALID_CURRENT_PASSWORD"},
+    429: {"model": ErrorResponse, "description": "RATE_LIMITED"},
+})
+def change_password(data: ChangePasswordInput, request: Request,
+                    session: Annotated[sessions.Session, Depends(require_session)]):
+    try:
+        validate_password(data.new_password)
+    except ValueError as exc:
+        raise ApiError(422, "INVALID_NEW_PASSWORD", str(exc)) from None
+    if data.new_password == data.current_password:
+        raise ApiError(422, "INVALID_NEW_PASSWORD", "Nowe hasło musi różnić się od obecnego.")
+    reserve_login(session.user.username, request.client.host if request.client else "unknown")
+    user = sessions.change_password(session, data.current_password, data.new_password)
+    if not user:
+        raise ApiError(403, "INVALID_CURRENT_PASSWORD", "Obecne hasło jest nieprawidłowe.")
+    login_succeeded(session.user.username)
     return user
 
 

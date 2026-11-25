@@ -36,7 +36,7 @@ def login(username: str, password: str, previous_token: str | None = None) -> Se
         normalized = ""  # Cannot match a valid username in the database.
     with connect() as conn:
         row = conn.execute(
-            "SELECT id, username, display_name, password_hash FROM users WHERE username = %s",
+            "SELECT id, username, display_name, must_change_password, password_hash FROM users WHERE username = %s",
             (normalized,),
         ).fetchone()
     try:
@@ -84,13 +84,39 @@ def current_session(token: str | None) -> Session | None:
                WHERE s.token_hash = %s AND u.id = s.user_id
                  AND s.idle_expires_at > clock_timestamp()
                  AND s.expires_at > clock_timestamp()
-               RETURNING u.id, u.username, u.display_name, s.idle_expires_at""",
+               RETURNING u.id, u.username, u.display_name, u.must_change_password, s.idle_expires_at""",
             (SESSION_IDLE_SECONDS, digest),
         ).fetchone()
         if not row:
             conn.execute("DELETE FROM sessions WHERE token_hash = %s", (digest,))
             return None
     return Session(PublicUser.model_validate(row), token, row["idle_expires_at"])
+
+
+def change_password(session: Session, current_password: str, new_password: str) -> PublicUser | None:
+    with connect() as conn:
+        row = conn.execute("SELECT password_hash FROM users WHERE id = %s", (session.user.id,)).fetchone()
+    try:
+        password_hasher.verify(row["password_hash"] if row else _dummy_hash, current_password)
+    except (VerificationError, InvalidHashError):
+        return None
+    if not row:
+        return None
+    new_hash = password_hasher.hash(new_password)
+    with connect() as conn:
+        user = conn.execute(
+            """UPDATE users SET password_hash = %s, must_change_password = false,
+                   password_changed_at = clock_timestamp()
+               WHERE id = %s AND password_hash = %s
+               RETURNING id, username, display_name, must_change_password""",
+            (new_hash, session.user.id, row["password_hash"]),
+        ).fetchone()
+        if not user:
+            return None
+        # Sessions opened with the old password end; this browser stays signed in.
+        conn.execute("DELETE FROM sessions WHERE user_id = %s AND token_hash <> %s",
+                     (session.user.id, token_digest(session.token)))
+    return PublicUser.model_validate(user)
 
 
 def logout(token: str | None) -> None:
