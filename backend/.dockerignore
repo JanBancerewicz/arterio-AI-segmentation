@@ -8,5 +8,6 @@
 !tests/**
 !scripts/
 !scripts/**
+!.coveragerc
 **/__pycache__/
 **/*.pyc

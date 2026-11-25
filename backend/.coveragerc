@@ -1,0 +1,6 @@
+[run]
+source = app
+omit = app/create_user.py
+concurrency = thread,multiprocessing
+parallel = true
+sigterm = true
