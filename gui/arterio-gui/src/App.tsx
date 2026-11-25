@@ -5,6 +5,7 @@ import {AnalysisPage} from "./pages/AnalysisPage.tsx";
 import {AuthLayout} from "./layouts/AuthLayout.tsx";
 import {LoginPage} from "./pages/LoginPage.tsx";
 import {RequireSession} from "./components/RequireSession.tsx";
+import {ChangePasswordPage} from "./pages/ChangePasswordPage.tsx";
 
 export const router = createBrowserRouter(createRoutesFromElements(
         <>
@@ -12,6 +13,9 @@ export const router = createBrowserRouter(createRoutesFromElements(
                 <Route element={<AppLayout />} >
                     <Route index element={<NewAnalysisPage />} />
                     <Route path="analyses/:id" element={<AnalysisPage />} />
+                </Route>
+                <Route element={<AuthLayout />} >
+                    <Route path="/change-password" element={<ChangePasswordPage />} />
                 </Route>
             </Route>
             <Route element={<AuthLayout />} >

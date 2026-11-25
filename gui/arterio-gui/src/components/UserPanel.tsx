@@ -2,6 +2,7 @@ import styles from './UserPanel.module.css';
 import {useSession} from "../hooks/useSession.ts";
 import {useLogout} from "../hooks/useLogout.ts";
 import {useContext} from 'react';
+import {Link} from 'react-router';
 import {MaskEditContext} from '../context/MaskEditContext.ts';
 
 const createAvatar = (displayName: string): string => {
@@ -35,6 +36,7 @@ export const UserPanel = () => {
                     </span>
                 </div>
             </div>
+            <Link className={styles.changePassword} to="/change-password">Zmień hasło</Link>
             <button
                     type="button"
                     className={styles.logout}

@@ -1,7 +1,8 @@
-import {Navigate, Outlet} from 'react-router';
+import {Navigate, Outlet, useLocation} from 'react-router';
 import {useSession} from '../hooks/useSession.ts';
 
 export const RequireSession = () => {
+    const location = useLocation();
     const {
         data: user,
         isPending,
@@ -33,6 +34,10 @@ export const RequireSession = () => {
 
     if (!user) {
         return <Navigate to="/login" replace />;
+    }
+
+    if (user.mustChangePassword && location.pathname !== '/change-password') {
+        return <Navigate to="/change-password" replace />;
     }
 
     return <Outlet />;

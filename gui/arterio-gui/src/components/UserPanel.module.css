@@ -68,6 +68,22 @@
 }
 
 .logout:hover:not(:disabled) { background: rgba(255, 255, 255, 0.18); }
+
+.changePassword {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: inherit;
+    font-size: 0.75rem;
+    text-align: center;
+    opacity: 0.85;
+}
+
+.changePassword:hover { opacity: 1; }
+
+.changePassword:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
 .logout svg { flex-shrink: 0; }
 .error { margin: 0.75rem 0 0; padding: 0.65rem; border-radius: 6px; background: #FEF2F2; color: #991B1B; font-size: 0.8rem; line-height: 1.5; }
 

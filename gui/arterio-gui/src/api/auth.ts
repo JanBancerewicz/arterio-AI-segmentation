@@ -4,6 +4,7 @@ export type User = {
     id: string;
     username: string;
     displayName: string;
+    mustChangePassword: boolean;
 }
 
 type LoginInput = {
@@ -11,8 +12,21 @@ type LoginInput = {
     password: string;
 }
 
+type ChangePasswordInput = {
+    currentPassword: string;
+    newPassword: string;
+}
+
 export const login = async (input: LoginInput): Promise<User> => {
     return apiRequest<User>('/auth/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(input),
+    });
+}
+
+export const changePassword = async (input: ChangePasswordInput): Promise<User> => {
+    return apiRequest<User>('/auth/password', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(input),
